@@ -1,0 +1,171 @@
+{
+  "name": "jules-vscode",
+  "displayName": "Jules Studio",
+  "description": "Jules Studio integration for VS Code",
+  "version": "0.1.0",
+  "publisher": "tazztone",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "jules",
+          "title": "Jules Studio",
+          "icon": "media/jules-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "jules": [
+        {
+          "id": "julesSessions",
+          "name": "Sessions",
+          "type": "tree",
+          "icon": "media/jules-icon.svg"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "jules.setupWizard",
+        "title": "Jules: Setup Wizard",
+        "category": "Jules",
+        "icon": "$(gear)"
+      },
+      {
+        "command": "jules.setApiKey",
+        "title": "Jules: Set API Key",
+        "category": "Jules"
+      },
+      {
+        "command": "jules.createSession",
+        "title": "Jules: Create New Session",
+        "category": "Jules"
+      },
+      {
+        "command": "jules.refreshSessions",
+        "title": "Jules: Refresh Sessions",
+        "category": "Jules",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "jules.openSession",
+        "title": "Jules: Open Session Detail",
+        "category": "Jules"
+      },
+      {
+        "command": "jules.approvePlan",
+        "title": "Jules: Approve Plan",
+        "category": "Jules",
+        "icon": "$(check)"
+      },
+      {
+        "command": "jules.sendMessage",
+        "title": "Jules: Send Message",
+        "category": "Jules",
+        "icon": "$(mail)"
+      },
+      {
+        "command": "jules.applyPatch",
+        "title": "Jules: Pull & Apply Changes to Local Files",
+        "category": "Jules",
+        "icon": "$(cloud-download)"
+      },
+      {
+        "command": "jules.deleteSession",
+        "title": "Jules: Delete Session",
+        "category": "Jules",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "jules.openInBrowser",
+        "title": "Jules: Open in Browser",
+        "category": "Jules",
+        "icon": "$(globe)"
+      },
+      {
+        "command": "jules.createSessionWithSelection",
+        "title": "Jules: New Session with Selection",
+        "category": "Jules"
+      }
+    ],
+    "viewsWelcome": [
+      {
+        "view": "julesSessions",
+        "contents": "Welcome to Jules Studio! 🐙\nTo get started, you need to configure your API key.\n[Get API Key from Jules Settings](https://jules.google.com/settings)\n[Configure API Key](command:jules.setupWizard)",
+        "when": "!jules:hasApiKey"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "jules.createSessionWithSelection",
+          "group": "navigation",
+          "when": "editorHasSelection"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "jules.refreshSessions",
+          "when": "view == julesSessions",
+          "group": "navigation"
+        },
+        {
+          "command": "jules.createSession",
+          "when": "view == julesSessions",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "jules.approvePlan",
+          "when": "view == julesSessions && viewItem == state-awaiting-approval",
+          "group": "inline"
+        },
+        {
+          "command": "jules.applyPatch",
+          "when": "view == julesSessions && viewItem == state-completed",
+          "group": "inline"
+        },
+        {
+          "command": "jules.deleteSession",
+          "when": "view == julesSessions",
+          "group": "1_modification"
+        },
+        {
+          "command": "jules.openInBrowser",
+          "when": "view == julesSessions",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "18.x",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "eslint": "^8.56.0",
+    "glob": "^10.3.10",
+    "mocha": "^10.2.0",
+    "typescript": "^5.3.3",
+    "@vscode/test-electron": "^2.3.8"
+  }
+}

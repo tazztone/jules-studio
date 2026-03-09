@@ -8,9 +8,24 @@ Jules Studio is a modern, unified dashboard for managing AI-driven coding sessio
 - **Real-time Activity Timeline**: Monitor progress events as they happen, from plan generation to completion.
 - **Interactive Review UI**: Human-in-the-loop workflows for approving agent plans and communicating with Jules through in-session messaging.
 - **Artifact Inspector**: View rendered code diffs (unified patch), terminal logs (bash output), and generated media.
+- **VS Code Extension** — All Jules functionality integrated directly into your IDE (sidebar, webviews, and terminal).
+- **AIP-160 filter input** — Server-side search on session lists.
+- **Inline unified diff viewer** — Green/red syntax highlighting for plan changes.
+- **Persistent Local Notes** — Keep per-session notes via `localStorage`.
+- **Desktop Notifications** — Get alerted when plans are ready or sessions fail.
 - **API Resilience**: Automated exponential backoff for rate-limiting (429) and robust error handling for API failures.
 - **Repository Explorer**: Browse connected GitHub repositories and branches.
 - **CLI Recipe Builder**: A collection of common automation patterns using the `jules` CLI.
+
+## VS Code Extension
+
+Located in `vscode-extension/`, this integrates Jules Studio into your development workflow.
+
+- **Auto-detects** your workspace repository and maps to Jules sources.
+- **Securely stores** API keys in the OS Keychain using SecretStorage.
+- **Webview Panel** for deep dives into activities, plans, and code diffs.
+- **Integrated Terminal** for applying patches via `jules remote pull`.
+- **Status Bar** shows active session counts and pending approvals.
 
 ## 🚀 Getting Started
 
