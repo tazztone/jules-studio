@@ -2,9 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
     Activity, Github, GitPullRequest, Clock, ArrowLeft, 
     MessageSquare, FileCode2, RefreshCw, Terminal, 
-    Loader2, Play, Check, Code, Trash2, HelpCircle 
+    Loader2, Play, Check, Code, Trash2, HelpCircle, StickyNote
 } from 'lucide-react';
-import { StateBadge, fetchJules } from './Common';
+import { StateBadge, fetchJules, Alert, ConfirmDialog, parseSessionId, parseRepoName } from './Common';
 
 const MOCK_ACTIVITIES = [
     {
@@ -73,11 +73,37 @@ const SessionDetailView = ({ session, onBack, apiKey }) => {
     const [sessionState, setSessionState] = useState(session.state);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
-    const [deleteLoading, setDeleteLoading] = useState(false);
+    const [confirmDelete, setConfirmDelete] = useState(false);
+    const [alertMsg, setAlertMsg] = useState('');
+    const [notes, setNotes] = useState(() => localStorage.getItem(`jules_notes_${session.name}`) || '');
 
     const pollInterval = useRef(null);
     const pollTime = useRef(5000);
     const retryCount = useRef(0);
+    const lastNotifiedState = useRef(session.state);
+
+    useEffect(() => {
+        if ("Notification" in window && Notification.permission === "default") {
+            Notification.requestPermission();
+        }
+    }, []);
+
+    const saveNotes = (val) => {
+        setNotes(val);
+        localStorage.setItem(`jules_notes_${session.name}`, val);
+    };
+
+    const checkNotifications = (newState) => {
+        if (newState === lastNotifiedState.current) return;
+        
+        if (["AWAITING_PLAN_APPROVAL", "COMPLETED"].includes(newState) && Notification.permission === "granted") {
+            new Notification(`Jules: Session ${newState === "COMPLETED" ? "Finished" : "Action Required"}`, {
+                body: `Session "${session.title || 'Untitled'}" is now ${newState.replace(/_/g, ' ')}.`,
+                icon: '/favicon.ico'
+            });
+        }
+        lastNotifiedState.current = newState;
+    };
 
     const loadActivities = async () => {
         if (!apiKey) {
@@ -93,6 +119,8 @@ const SessionDetailView = ({ session, onBack, apiKey }) => {
             const actRes = await fetchJules(`/v1alpha/${session.name}/activities`, 'GET', null, apiKey);
             setActivities(actRes.activities || []);
             
+            checkNotifications(sessRes.state);
+
             // Success: Reset polling backoff
             if (retryCount.current > 0) {
                 retryCount.current = 0;
@@ -107,7 +135,7 @@ const SessionDetailView = ({ session, onBack, apiKey }) => {
                 pollTime.current = Math.min(60000, pollTime.current * 2);
                 resetPolling();
             } else {
-                alert(`Failed to load activities: ${err.message}`);
+                setAlertMsg(`Failed to load activities: ${err.message}`);
             }
         } finally {
             setLoading(false);
@@ -140,15 +168,14 @@ const SessionDetailView = ({ session, onBack, apiKey }) => {
             await fetchJules(`/v1alpha/${session.name}:approvePlan`, 'POST', {}, apiKey);
             await loadActivities();
         } catch (err) {
-            alert(`Error approving plan: ${err.message}`);
+            setAlertMsg(`Error approving plan: ${err.message}`);
         } finally {
             setActionLoading(false);
         }
     };
 
     const handleDeleteSession = async () => {
-        if (!window.confirm('Are you sure you want to delete this session?')) return;
-        setDeleteLoading(true);
+        setActionLoading(true);
         if (!apiKey) {
             onBack();
             return;
@@ -157,9 +184,10 @@ const SessionDetailView = ({ session, onBack, apiKey }) => {
             await fetchJules(`/v1alpha/${session.name}`, 'DELETE', null, apiKey);
             onBack();
         } catch (err) {
-            alert(`Error deleting session: ${err.message}`);
+            setAlertMsg(`Error deleting session: ${err.message}`);
         } finally {
-            setDeleteLoading(false);
+            setActionLoading(false);
+            setConfirmDelete(false);
         }
     };
 
@@ -180,7 +208,7 @@ const SessionDetailView = ({ session, onBack, apiKey }) => {
             await fetchJules(`/v1alpha/${session.name}:sendMessage`, 'POST', { message: msg }, apiKey);
             await loadActivities();
         } catch (err) {
-            alert(`Error sending message: ${err.message}`);
+            setAlertMsg(`Error sending message: ${err.message}`);
         } finally {
             setActionLoading(false);
         }
@@ -217,17 +245,19 @@ const SessionDetailView = ({ session, onBack, apiKey }) => {
                         </a>
                     ) : null)}
                     <button 
-                        onClick={handleDeleteSession} 
-                        disabled={deleteLoading}
+                        onClick={() => setConfirmDelete(true)} 
+                        disabled={actionLoading}
                         className="bg-red-900/20 hover:bg-red-900/40 text-red-400 p-2 rounded-lg transition-colors border border-red-900/50 disabled:opacity-50"
                         title="Delete Session"
                     >
-                        {deleteLoading ? <Loader2 size={20} className="animate-spin" /> : <Trash2 size={20} />}
+                        {actionLoading ? <Loader2 size={20} className="animate-spin" /> : <Trash2 size={20} />}
                     </button>
                 </div>
             </div>
 
-            <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-0">
+            {alertMsg && <Alert message={alertMsg} onClose={() => setAlertMsg('')} />}
+
+            <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-0 mt-4">
                 {/* Left Column: Timeline & Chat */}
                 <div className="flex flex-col bg-gray-800/30 border border-gray-800 rounded-xl overflow-hidden">
                     <div className="p-4 bg-gray-800/50 border-b border-gray-800 font-medium text-gray-200 flex items-center justify-between">
@@ -284,6 +314,19 @@ const SessionDetailView = ({ session, onBack, apiKey }) => {
                                 {actionLoading ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} fill="currentColor" />}
                             </button>
                         </form>
+                    </div>
+
+                    {/* Local Notes */}
+                    <div className="p-4 bg-gray-900/30 border-t border-gray-800 space-y-3">
+                        <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                            <StickyNote size={14} /> My Private Notes (LocalStorage)
+                        </div>
+                        <textarea 
+                            value={notes}
+                            onChange={(e) => saveNotes(e.target.value)}
+                            placeholder="Add your local thoughts/reminders for this session..."
+                            className="w-full h-24 bg-transparent border-none text-sm text-gray-300 placeholder:text-gray-600 focus:ring-0 resize-none"
+                        />
                     </div>
                 </div>
 
@@ -351,7 +394,7 @@ const SessionDetailView = ({ session, onBack, apiKey }) => {
                                             <Terminal size={16} /> Local Integration
                                         </div>
                                         <button 
-                                            onClick={() => navigator.clipboard.writeText(`# Session: "${session.title}"\njules remote pull --session ${session.name}`)}
+                                            onClick={() => navigator.clipboard.writeText(`# Session: "${session.title}"\njules remote pull --session ${parseSessionId(session.name)}`)}
                                             className="text-xs text-blue-400 hover:text-white transition-colors bg-blue-500/10 px-2 py-1 rounded border border-blue-500/20"
                                         >
                                             Copy Command
@@ -363,7 +406,7 @@ const SessionDetailView = ({ session, onBack, apiKey }) => {
                                         </div>
                                         <pre className="text-[11px] font-mono text-blue-200/80 leading-relaxed overflow-x-auto whitespace-pre">
                                             # Session: "{session.title}"<br/>
-                                            jules remote pull --session {session.name}
+                                            jules remote pull --session {parseSessionId(session.name)}
                                         </pre>
                                     </div>
                                 </div>
@@ -399,6 +442,14 @@ const SessionDetailView = ({ session, onBack, apiKey }) => {
                     </div>
                 </div>
             </div>
+            <ConfirmDialog 
+                open={confirmDelete}
+                title="Delete Session"
+                message="Are you sure you want to delete this session? This will permanently remove it from the Jules API. This action cannot be undone."
+                confirmLabel={actionLoading ? 'Deleting...' : 'Delete Permanently'}
+                onConfirm={handleDeleteSession}
+                onCancel={() => setConfirmDelete(false)}
+            />
         </div>
     );
 };

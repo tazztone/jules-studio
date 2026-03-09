@@ -11,6 +11,16 @@ vi.mock('../Common', async () => {
     };
 });
 
+// Mock Notification API
+global.Notification = {
+    requestPermission: vi.fn(() => Promise.resolve('granted')),
+    permission: 'default',
+};
+const MockNotification = vi.fn();
+global.Notification = MockNotification;
+MockNotification.requestPermission = vi.fn(() => Promise.resolve('granted'));
+MockNotification.permission = 'granted';
+
 const mockSession = {
     name: 'sessions/sess-1',
     title: 'Test Session',
@@ -113,7 +123,7 @@ describe('SessionDetailView Component', () => {
         fireEvent.click(tab);
         
         await waitFor(() => expect(screen.getByText(/Local Integration/i)).toBeInTheDocument());
-        expect(screen.getByText(/jules remote pull --session sessions\/sess-1/i)).toBeInTheDocument();
+        expect(screen.getByText(/jules remote pull --session sess-1/i)).toBeInTheDocument();
         
         const copyBtn = screen.getByText('Copy Command');
         fireEvent.click(copyBtn);
@@ -171,7 +181,7 @@ describe('SessionDetailView Component', () => {
         render(<SessionDetailView session={mockSession} onBack={() => {}} apiKey="key" />);
         
         await waitFor(() => {
-            expect(window.alert).toHaveBeenCalledWith(expect.stringContaining('Internal Server Error'));
+            expect(screen.getByText(/Internal Server Error/i)).toBeInTheDocument();
         });
     });
 
@@ -253,6 +263,9 @@ describe('SessionDetailView Component', () => {
         
         const deleteBtn = await screen.findByTitle(/Delete Session/i);
         fireEvent.click(deleteBtn);
+        
+        const confirmBtn = await screen.findByText('Delete Permanently');
+        fireEvent.click(confirmBtn);
         
         await waitFor(() => {
             expect(fetchJules).toHaveBeenCalledWith('/v1alpha/sessions/sess-1', 'DELETE', null, 'key');

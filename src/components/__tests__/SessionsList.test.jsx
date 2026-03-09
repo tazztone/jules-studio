@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import SessionsList from '../SessionsList';
 import { fetchJules } from '../Common';
 
@@ -40,13 +40,15 @@ describe('SessionsList Component', () => {
     });
 
     it('handles session deletion', async () => {
-        window.confirm = vi.fn(() => true);
         render(<SessionsList apiKey="test-key" onSelectSession={() => {}} />);
         
         await waitFor(() => screen.getByText('Test Session'));
         
         const deleteBtn = screen.getByTitle('Delete Session');
         fireEvent.click(deleteBtn);
+        
+        const confirmBtn = await screen.findByText('Delete');
+        fireEvent.click(confirmBtn);
         
         await waitFor(() => {
             expect(fetchJules).toHaveBeenCalledWith('/v1alpha/sessions/s1', 'DELETE', null, 'test-key');
@@ -125,13 +127,12 @@ describe('SessionsList Component', () => {
     });
 
     it('shows error if required fields are missing during creation', async () => {
-        window.alert = vi.fn();
         render(<SessionsList apiKey="key" onSelectSession={() => {}} />);
         fireEvent.click(screen.getByText(/New Session/i));
         
         // Try to create without prompt
         fireEvent.click(screen.getByRole('button', { name: /create session/i }));
-        expect(window.alert).toHaveBeenCalledWith(expect.stringContaining('required'));
+        expect(await screen.findByText(/required/i)).toBeInTheDocument();
     });
 
     it('creates a new session via modal and refreshes list', async () => {
@@ -230,7 +231,42 @@ describe('SessionsList Component', () => {
         
         expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
         
-        resolveFetch({ sessions: [] });
+        await act(async () => {
+            resolveFetch({ sessions: [] });
+        });
         await waitFor(() => expect(screen.queryByTestId('loading-spinner')).not.toBeInTheDocument());
+    });
+
+    it('handles multi-session selection and bulk delete', async () => {
+        const manySessions = [
+            { name: 'sessions/s1', title: 'S1', state: 'COMPLETED' },
+            { name: 'sessions/s2', title: 'S2', state: 'COMPLETED' }
+        ];
+        fetchJules.mockImplementation((path) => {
+            if (path.includes('/sessions')) return Promise.resolve({ sessions: manySessions });
+            if (path.includes('/sources')) return Promise.resolve({ sources: mockSources });
+            return Promise.resolve({});
+        });
+        
+        render(<SessionsList apiKey="test-key" onSelectSession={() => {}} />);
+        
+        await screen.findByText('S1');
+        
+        // Click select all
+        const selectAll = screen.getByLabelText(/Select All/i);
+        fireEvent.click(selectAll);
+        
+        expect(screen.getByText(/2 session\(s\) selected/i)).toBeInTheDocument();
+        
+        const bulkDeleteBtn = screen.getByText(/Delete Selected/i);
+        fireEvent.click(bulkDeleteBtn);
+        
+        const confirmBtn = await screen.findByText('Delete');
+        fireEvent.click(confirmBtn);
+        
+        await waitFor(() => {
+            expect(fetchJules).toHaveBeenCalledWith('/v1alpha/sessions/s1', 'DELETE', null, 'test-key');
+            expect(fetchJules).toHaveBeenCalledWith('/v1alpha/sessions/s2', 'DELETE', null, 'test-key');
+        });
     });
 });
