@@ -1,5 +1,19 @@
 The Jules REST API and CLI allow applications to create and manage AI-driven coding sessions on connected GitHub repositories, monitor fine‑grained progress, and retrieve structured outputs such as pull requests, code patches, command logs, and media artifacts. By combining HTTP endpoints with a scriptable CLI and terminal UI, developers can embed Jules into custom tools, workflows, and automations for task delegation, review, and monitoring.
 
+
+[Quickstart](https://jules.google/docs/api/reference/)
+[Overview](https://jules.google/docs/api/reference/overview)
+[Authentication](https://jules.google/docs/api/reference/authentication)
+[Sessions](https://jules.google/docs/api/reference/sessions)
+[Activities](https://jules.google/docs/api/reference/activities)
+[Sources](https://jules.google/docs/api/reference/sources)
+[Types](https://jules.google/docs/api/reference/types)
+
+
+[Reference](https://jules.google/docs/cli/reference)
+[Examples](https://jules.google/docs/cli/examples)
+
+
 ---
 
 Here is a comprehensive plan for a web application that fully integrates the capabilities of the Jules REST API and CLI.
