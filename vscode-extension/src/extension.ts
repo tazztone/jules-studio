@@ -40,8 +40,20 @@ export async function activate(context: vscode.ExtensionContext) {
             if (choice === step1) {
                 vscode.env.openExternal(vscode.Uri.parse('https://jules.google.com/settings'));
                 vscode.window.showInformationMessage('Opening Jules Settings. Once you have your key, run this wizard again for Step 2.');
-            } else if (choice === step2 || !choice) {
+            } else if (choice === step2) {
                 await vscode.commands.executeCommand('jules.setApiKey');
+            } else if (choice === step3) {
+                // Verify logic: v0.2
+                await vscode.window.withProgress(
+                    { location: vscode.ProgressLocation.Notification, title: 'Verifying Jules API Key...' },
+                    async () => {
+                        const key = await authManager.getApiKey();
+                        if (!key) throw new Error('No key found. Please do Step 2 first.');
+                        const client = new JulesClient(key);
+                        await client.listSources(1); // Call a lightweight endpoint
+                    }
+                );
+                vscode.window.showInformationMessage('✅ API Key verified! You are all set.');
             }
         }),
 
@@ -60,7 +72,7 @@ export async function activate(context: vscode.ExtensionContext) {
             if (key) {
                 await authManager.setApiKey(key);
                 vscode.commands.executeCommand('setContext', 'jules:hasApiKey', true);
-                vscode.window.showInformationMessage('Jules API Key updated.');
+                vscode.window.showInformationMessage('Jules API Key updated. Run "Verify & Finish" in the wizard to test it.');
                 treeProvider.refresh();
             }
         }),
@@ -128,7 +140,12 @@ export async function activate(context: vscode.ExtensionContext) {
 
         vscode.commands.registerCommand('jules.openInBrowser', (item) => {
             const session = item?.session || (item as any);
-            if (session?.url) {
+            if (session?.name) {
+                // Construct URL correctly: v0.2
+                const sessionId = session.name.split('/').pop();
+                const url = `https://jules.google.com/sessions/${sessionId}`;
+                vscode.env.openExternal(vscode.Uri.parse(url));
+            } else if (session?.url) {
                 vscode.env.openExternal(vscode.Uri.parse(session.url));
             }
         })

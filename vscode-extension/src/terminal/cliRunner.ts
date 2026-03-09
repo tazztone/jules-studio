@@ -1,10 +1,25 @@
 import * as vscode from 'vscode';
 import { Session } from '../api/types';
+import { execSync } from 'child_process';
 
 export class CliRunner {
     private static terminal: vscode.Terminal | undefined;
 
-    static applyPatch(session: Session) {
+    static async applyPatch(session: Session) {
+        // CLI guard: v0.2
+        const isInstalled = await this.checkCliInstalled();
+        if (!isInstalled) {
+            const install = 'Install CLI';
+            const choice = await vscode.window.showErrorMessage(
+                'Jules CLI not found. Please install "@google/jules" to apply local patches.',
+                install
+            );
+            if (choice === install) {
+                vscode.env.openExternal(vscode.Uri.parse('https://www.npmjs.com/package/@google/jules'));
+            }
+            return;
+        }
+
         if (!this.terminal || this.terminal.exitStatus !== undefined) {
             this.terminal = vscode.window.createTerminal('Jules CLI');
         }
@@ -16,8 +31,12 @@ export class CliRunner {
     }
 
     static async checkCliInstalled(): Promise<boolean> {
-        // We can't easily run a command and get output synchronously to check presence without node's exec
-        // But we can try to run it in a hidden terminal or just assume it's there and show error if pull fails
-        return true; 
+        try {
+            // v0.2: Real check
+            execSync('jules --version', { stdio: 'ignore' });
+            return true;
+        } catch (e) {
+            return false;
+        }
     }
 }

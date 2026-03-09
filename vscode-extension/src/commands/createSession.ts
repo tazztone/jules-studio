@@ -56,8 +56,8 @@ export async function createSessionCommand(authManager: AuthManager, refresh: ()
         // 4. Automation Mode
         const modeChoice = await vscode.window.showQuickPick(
             [
-                { label: 'Manual Approval', detail: 'Approve every plan manually before implementation.', value: false },
-                { label: 'Auto Create PR', detail: 'Jules will create a PR automatically once finished.', value: true, automationMode: 'AUTO_CREATE_PR' }
+                { label: 'Manual Approval', detail: 'Approve every plan manually before implementation.', value: true },
+                { label: 'Auto Create PR', detail: 'Jules will create a PR automatically once finished.', value: false, automationMode: 'AUTO_CREATE_PR' }
             ],
             { placeHolder: 'Select Automation Mode' }
         );

@@ -25,9 +25,7 @@ export class SessionsTreeProvider implements vscode.TreeDataProvider<vscode.Tree
 
         try {
             const apiKey = await this.authManager.getApiKey();
-            if (!apiKey) {
-                return [];
-            }
+            if (!apiKey) return [];
 
             const client = new JulesClient(apiKey);
             const { sessions } = await client.listSessions(50);
@@ -60,7 +58,7 @@ export class SessionTreeItem extends vscode.TreeItem {
         super(title, vscode.TreeItemCollapsibleState.None);
         
         this.description = this.getStateLabel(session.state);
-        this.tooltip = `Prompt: ${session.prompt}\nState: ${session.state}`;
+        this.tooltip = this.createTooltip(session);
         this.iconPath = this.getStateIcon(session.state);
         this.contextValue = `state-${session.state.toLowerCase().replace(/_/g, '-')}`;
         
@@ -69,6 +67,51 @@ export class SessionTreeItem extends vscode.TreeItem {
             title: 'Open Session',
             arguments: [this]
         };
+    }
+
+    private createTooltip(session: Session): vscode.MarkdownString {
+        const tooltip = new vscode.MarkdownString();
+        tooltip.isTrusted = true;
+        tooltip.supportHtml = true;
+
+        const timeAgoStr = this.getTimeAgo(new Date(session.updateTime));
+        const repo = session.sourceContext?.source || 'No repository';
+        const nextAction = this.getApplyAction(session.state);
+
+        tooltip.appendMarkdown(`**Session:** ${session.title || session.id}\n\n`);
+        tooltip.appendMarkdown(`**Prompt:** ${session.prompt}\n\n`);
+        tooltip.appendMarkdown(`---\n`);
+        tooltip.appendMarkdown(`**Repo:** \`${repo}\`  \n`);
+        tooltip.appendMarkdown(`**Last Update:** ${timeAgoStr}  \n`);
+        tooltip.appendMarkdown(`**Status:** ${this.getStateLabel(session.state)}  \n`);
+        
+        if (nextAction) {
+            tooltip.appendMarkdown(`\n**Next Action:** ${nextAction}`);
+        }
+
+        return tooltip;
+    }
+
+    private getApplyAction(state: string): string {
+        switch (state) {
+            case 'AWAITING_PLAN_APPROVAL': return 'Go to Panel → **Approve Plan**';
+            case 'COMPLETED': return 'Right-click → **Apply Changes**';
+            case 'AWAITING_USER_FEEDBACK': return 'Open Panel → **Respond to Jules**';
+            case 'FAILED': return 'Check logs in Browser';
+            case 'PLANNING':
+            case 'IN_PROGRESS': return 'Wait for Jules to finish...';
+            default: return '';
+        }
+    }
+
+    private getTimeAgo(date: Date): string {
+        const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+        if (seconds < 60) return 'just now';
+        const minutes = Math.floor(seconds / 60);
+        if (minutes < 60) return `${minutes}m ago`;
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) return `${hours}h ago`;
+        return date.toLocaleDateString();
     }
 
     private getStateLabel(state: string): string {

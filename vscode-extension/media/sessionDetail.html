@@ -94,6 +94,17 @@
             border-radius: 2px;
             resize: vertical;
         }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            opacity: 0.7;
+        }
+        .empty-state .icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -108,7 +119,10 @@
 
         <h3>Activity Timeline</h3>
         <div id="activityList" class="activity-list">
-            <p>Loading activities...</p>
+            <div class="empty-state">
+                <span class="icon">🐙</span>
+                <p>Loading activities...</p>
+            </div>
         </div>
 
         <div class="actions" id="actionPanel">
@@ -155,7 +169,7 @@
                     </div>
                 `).join('');
             } else {
-                list.innerHTML = '<p>No activities yet.</p>';
+                list.innerHTML = getEmptyStateHtml(session.state);
             }
 
             const actions = document.getElementById('actionPanel');
@@ -164,9 +178,32 @@
                 actions.innerHTML += '<button onclick="approvePlan()">Approve Plan</button>';
             }
             if (session.state === 'COMPLETED') {
-                actions.innerHTML += '<button onclick="applyPatch()">Apply Patch & Pull Changes</button>';
+                actions.innerHTML += '<button onclick="applyPatch()">Pull & Apply Changes to Local Files</button>';
             }
             actions.innerHTML += '<button onclick="openInBrowser()">Open in Browser</button>';
+        }
+
+        function getEmptyStateHtml(state) {
+            let icon = '🐙';
+            let text = 'No activities yet.';
+
+            if (state === 'PLANNING' || state === 'QUEUED') {
+                icon = '⏳';
+                text = 'Jules is preparing a plan...';
+            } else if (state === 'AWAITING_PLAN_APPROVAL') {
+                icon = '📋';
+                text = 'Plan ready! Review and approve below.';
+            } else if (state === 'COMPLETED') {
+                icon = '✅';
+                text = 'Session completed. You can now apply changes.';
+            }
+
+            return `
+                <div class="empty-state">
+                    <span class="icon">${icon}</span>
+                    <p>${text}</p>
+                </div>
+            `;
         }
 
         function renderArtifacts(artifacts) {

@@ -2,6 +2,16 @@
 
 Bring the power of Jules directly into your IDE. Manage sessions, approve plans, and apply patches without leaving your editor.
 
+## Prerequisites
+
+This extension requires the **Jules CLI** to be installed on your machine for pulling changes to your local workspace:
+
+```bash
+npm install -g @google/jules
+```
+
+---
+
 ## Features
 
 - **Sidebar TreeView**: View all your Jules sessions at a glance with live status updates.

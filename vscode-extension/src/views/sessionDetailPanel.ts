@@ -6,7 +6,7 @@ import { JulesClient } from '../api/julesClient';
 import { Session } from '../api/types';
 
 export class SessionDetailPanel {
-    public static currentPanel: SessionDetailPanel | undefined;
+    public static panels: Map<string, SessionDetailPanel> = new Map();
     private readonly _panel: vscode.WebviewPanel;
     private _disposables: vscode.Disposable[] = [];
 
@@ -33,7 +33,8 @@ export class SessionDetailPanel {
                         vscode.commands.executeCommand('jules.applyPatch', { session: this.session });
                         break;
                     case 'openBrowser':
-                        vscode.env.openExternal(vscode.Uri.parse(this.session.url));
+                        const url = `https://jules.google.com/sessions/${this.session.name.split('/').pop()}`;
+                        vscode.env.openExternal(vscode.Uri.parse(url));
                         break;
                 }
             },
@@ -47,8 +48,9 @@ export class SessionDetailPanel {
     public static createOrShow(extensionUri: vscode.Uri, session: Session, authManager: AuthManager) {
         const column = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
 
-        if (SessionDetailPanel.currentPanel && SessionDetailPanel.currentPanel.session.id === session.id) {
-            SessionDetailPanel.currentPanel._panel.reveal(column);
+        const existingPanel = SessionDetailPanel.panels.get(session.id);
+        if (existingPanel) {
+            existingPanel._panel.reveal(column);
             return;
         }
 
@@ -56,10 +58,14 @@ export class SessionDetailPanel {
             'sessionDetail',
             `Session: ${session.title || session.id}`,
             column || vscode.ViewColumn.One,
-            { enableScripts: true }
+            { 
+                enableScripts: true,
+                retainContextWhenHidden: true // UI Refresh: v0.2
+            }
         );
 
-        SessionDetailPanel.currentPanel = new SessionDetailPanel(panel, extensionUri, session, authManager);
+        const sessionDetailPanel = new SessionDetailPanel(panel, extensionUri, session, authManager);
+        SessionDetailPanel.panels.set(session.id, sessionDetailPanel);
     }
 
     private async _approvePlan() {
@@ -112,12 +118,13 @@ export class SessionDetailPanel {
     }
 
     private _getHtmlForWebview(extensionUri: vscode.Uri): string {
-        const filePath = path.join(extensionUri.fsPath, 'src', 'views', 'sessionDetail.html');
+        // Path fix: v0.2
+        const filePath = path.join(extensionUri.fsPath, 'media', 'sessionDetail.html');
         return fs.readFileSync(filePath, 'utf8');
     }
 
     public dispose() {
-        SessionDetailPanel.currentPanel = undefined;
+        SessionDetailPanel.panels.delete(this.session.id);
         this._panel.dispose();
         while (this._disposables.length) {
             const x = this._disposables.pop();
