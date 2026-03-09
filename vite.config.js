@@ -9,8 +9,13 @@ export default defineConfig({
       '/v1alpha': {
         target: 'https://jules.googleapis.com',
         changeOrigin: true,
-        secure: true,
+        secure: false
       }
     }
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './src/setupTests.js',
   }
 })

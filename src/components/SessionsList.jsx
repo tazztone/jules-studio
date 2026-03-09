@@ -156,24 +156,25 @@ const SessionsList = ({ onSelectSession, apiKey }) => {
                 </div>
                 <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 space-y-6">
                     <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">Session Title (Optional)</label>
-                        <input type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white focus:border-blue-500 focus:outline-none" placeholder="e.g. Implement user login" />
+                        <label htmlFor="sessionTitle" className="block text-sm font-medium text-gray-300 mb-2">Session Title (Optional)</label>
+                        <input id="sessionTitle" type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white focus:border-blue-500 focus:outline-none" placeholder="e.g. Implement user login" />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">Prompt *</label>
-                        <textarea value={prompt} onChange={e => setPrompt(e.target.value)} className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white focus:border-blue-500 focus:outline-none min-h-[100px]" placeholder="Describe the coding task for Jules..." />
+                        <label htmlFor="sessionPrompt" className="block text-sm font-medium text-gray-300 mb-2">Prompt *</label>
+                        <textarea id="sessionPrompt" value={prompt} onChange={e => setPrompt(e.target.value)} className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white focus:border-blue-500 focus:outline-none min-h-[100px]" placeholder="Describe the coding task for Jules..." />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">Source Repository *</label>
-                            <select value={source} onChange={e => setSource(e.target.value)} className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white focus:border-blue-500 focus:outline-none">
+                            <label htmlFor="repoSource" className="block text-sm font-medium text-gray-300 mb-2">Source Repository *</label>
+                            <select id="repoSource" value={source} onChange={e => setSource(e.target.value)} className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white focus:border-blue-500 focus:outline-none">
                                 {sources.map(s => <option key={s.name} value={s.name}>{String(s.githubRepo?.owner)}/{String(s.githubRepo?.name)}</option>)}
                             </select>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">Starting Branch *</label>
+                            <label htmlFor="startBranch" className="block text-sm font-medium text-gray-300 mb-2">Starting Branch *</label>
                             <div className="relative">
                                 <select 
+                                    id="startBranch"
                                     value={branch} 
                                     onChange={e => setBranch(e.target.value)} 
                                     className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white focus:border-blue-500 focus:outline-none appearance-none"
@@ -192,13 +193,15 @@ const SessionsList = ({ onSelectSession, apiKey }) => {
                     </div>
                     <div className="grid grid-cols-1 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">Automation Mode</label>
+                            <label htmlFor="automationMode" className="block text-sm font-medium text-gray-300 mb-2">Automation Mode</label>
                             <select 
+                                id="automationMode"
                                 value={automationMode} 
                                 onChange={e => setAutomationMode(e.target.value)} 
                                 className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white focus:border-blue-500 focus:outline-none"
                             >
                                 <option value="AUTO_CREATE_PR">Auto Create PR</option>
+                                <option value="FULLY_AUTOMATED">Fully Automated</option>
                                 <option value="MANUAL">Manual (Local Branch Only)</option>
                             </select>
                         </div>
@@ -248,7 +251,7 @@ const SessionsList = ({ onSelectSession, apiKey }) => {
 
             <div className="bg-gray-800/30 border border-gray-800 rounded-xl overflow-hidden">
                 {loading ? (
-                    <div className="flex items-center justify-center p-12 text-blue-400"><Loader2 className="animate-spin" size={32} /></div>
+                    <div className="flex items-center justify-center p-12 text-blue-400" data-testid="loading-spinner"><Loader2 className="animate-spin" size={32} /></div>
                 ) : (
                     <table className="w-full text-left border-collapse">
                         <thead>

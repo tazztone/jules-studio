@@ -54,7 +54,12 @@ const SourcesView = ({ apiKey }) => {
             {error && <div className="bg-red-900/20 text-red-400 p-4 rounded-lg border border-red-900/50">{error}</div>}
 
             {loading ? (
-                <div className="flex items-center justify-center h-48 text-blue-400"><Loader2 className="animate-spin" size={32} /></div>
+                <div className="flex items-center justify-center h-48 text-blue-400" data-testid="loading-spinner"><Loader2 className="animate-spin" size={32} /></div>
+            ) : sources.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-64 bg-gray-800/30 border border-gray-700 border-dashed rounded-xl text-gray-500 space-y-4">
+                    <Github size={48} className="opacity-20" />
+                    <p>No repositories connected yet.</p>
+                </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {sources.map((src) => (
@@ -79,6 +84,24 @@ const SourcesView = ({ apiKey }) => {
                                 <div className="text-xs text-gray-400 flex items-center justify-between">
                                     <span>Active Branches:</span>
                                     <span>{src.githubRepo?.branches?.length || 0}</span>
+                                </div>
+                                <div className="pt-2">
+                                    <button 
+                                        onClick={async () => {
+                                            if (window.confirm('Disconnect this repository?')) {
+                                                try {
+                                                    await fetchJules(`/v1alpha/${src.name}`, 'DELETE', null, apiKey);
+                                                    loadSources();
+                                                } catch (err) {
+                                                    setError(err.message);
+                                                }
+                                            }
+                                        }}
+                                        title="Disconnect Repository"
+                                        className="w-full text-xs text-red-400 hover:text-red-300 transition-colors py-2 border border-red-900/30 rounded bg-red-900/10 hover:bg-red-900/20"
+                                    >
+                                        Disconnect Repository
+                                    </button>
                                 </div>
                             </div>
                         </div>

@@ -6,7 +6,7 @@ const Sidebar = () => {
     const navItems = [
         { id: 'sessions', label: 'Sessions', path: '/sessions', icon: LayoutDashboard },
         { id: 'sources', label: 'Sources', path: '/sources', icon: Github },
-        { id: 'cli', label: 'CLI Recipes', path: '/cli', icon: Terminal },
+        { id: 'cli', label: 'CLI & Integrations', path: '/cli', icon: Terminal },
         { id: 'settings', label: 'Settings', path: '/settings', icon: Settings },
     ];
 

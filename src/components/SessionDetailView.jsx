@@ -67,7 +67,7 @@ const DiffViewer = ({ patch }) => {
 };
 
 const SessionDetailView = ({ session, onBack, apiKey }) => {
-    const [activeTab, setActiveTab] = useState('timeline');
+    const [activeTab, setActiveTab] = useState('plan');
     const [chatInput, setChatInput] = useState('');
     const [activities, setActivities] = useState([]);
     const [sessionState, setSessionState] = useState(session.state);
@@ -106,6 +106,8 @@ const SessionDetailView = ({ session, onBack, apiKey }) => {
                 retryCount.current += 1;
                 pollTime.current = Math.min(60000, pollTime.current * 2);
                 resetPolling();
+            } else {
+                alert(`Failed to load activities: ${err.message}`);
             }
         } finally {
             setLoading(false);
@@ -273,7 +275,12 @@ const SessionDetailView = ({ session, onBack, apiKey }) => {
                                 placeholder="Send a message to Jules..."
                                 className="w-full bg-gray-900 border border-gray-700 rounded-lg pl-4 pr-12 py-3 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors disabled:opacity-50"
                             />
-                            <button type="submit" disabled={actionLoading || !chatInput.trim()} className="absolute right-2 top-2 bottom-2 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 text-white rounded-md px-3 flex items-center justify-center transition-colors">
+                            <button 
+                                type="submit" 
+                                disabled={!chatInput.trim() || actionLoading} 
+                                title="Send Message"
+                                className="absolute right-2 top-2 bottom-2 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 text-white rounded-md px-3 flex items-center justify-center transition-colors"
+                            >
                                 {actionLoading ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} fill="currentColor" />}
                             </button>
                         </form>
@@ -337,6 +344,30 @@ const SessionDetailView = ({ session, onBack, apiKey }) => {
 
                         {activeTab === 'artifacts' && (
                             <div className="space-y-6">
+                                {/* CLI Pull Snippet */}
+                                <div className="bg-blue-600/10 border border-blue-500/20 rounded-xl p-4 relative overflow-hidden group mb-6">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <div className="flex items-center gap-2 text-blue-300 text-sm font-medium">
+                                            <Terminal size={16} /> Local Integration
+                                        </div>
+                                        <button 
+                                            onClick={() => navigator.clipboard.writeText(`# Session: "${session.title}"\njules remote pull --session ${session.name}`)}
+                                            className="text-xs text-blue-400 hover:text-white transition-colors bg-blue-500/10 px-2 py-1 rounded border border-blue-500/20"
+                                        >
+                                            Copy Command
+                                        </button>
+                                    </div>
+                                    <div className="relative">
+                                        <div className="absolute -right-2 -bottom-2 opacity-5 pointer-events-none group-hover:scale-110 transition-transform">
+                                            <Code size={48} />
+                                        </div>
+                                        <pre className="text-[11px] font-mono text-blue-200/80 leading-relaxed overflow-x-auto whitespace-pre">
+                                            # Session: "{session.title}"<br/>
+                                            jules remote pull --session {session.name}
+                                        </pre>
+                                    </div>
+                                </div>
+
                                 {artifactActivities.length > 0 ? artifactActivities.flatMap(a => a.artifacts || []).map((art, idx) => (
                                     <div key={idx} className="space-y-2">
                                         <h4 className="text-sm font-medium text-gray-300 uppercase tracking-wider flex items-center gap-2">

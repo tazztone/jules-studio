@@ -1,0 +1,1453 @@
+
+> jules-studio@0.1.0 test
+> vitest --coverage --run
+
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/home/tazztone/_coding/jules-studio[39m
+      [2mCoverage enabled with [22m[33mv8[39m
+
+ [32m✓[39m src/components/__tests__/Common.test.jsx [2m([22m[2m8 tests[22m[2m)[22m[32m 37[2mms[22m[39m
+ [32m✓[39m src/components/__tests__/SettingsView.test.jsx [2m([22m[2m3 tests[22m[2m)[22m[32m 39[2mms[22m[39m
+ [31m❯[39m src/components/__tests__/CliRecipesView.test.jsx [2m([22m[2m3 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 58[2mms[22m[39m
+     [32m✓[39m renders the core sections[32m 40[2mms[22m[39m
+     [32m✓[39m contains recipe code snippets[32m 14[2mms[22m[39m
+[31m     [31m×[31m copies install command to clipboard[39m[32m 3[2mms[22m[39m
+ [32m✓[39m src/components/__tests__/SourcesView.test.jsx [2m([22m[2m2 tests[22m[2m)[22m[32m 61[2mms[22m[39m
+stderr | src/__tests__/App.test.jsx > App Integration > renders sidebar and main content
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | src/components/__tests__/SessionsList.test.jsx > SessionsList Component > handles automation mode toggle in creation modal
+Warning: An update to SessionsList inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at SessionsList (/home/tazztone/_coding/jules-studio/src/components/SessionsList.jsx:35:25)
+Warning: An update to SessionsList inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at SessionsList (/home/tazztone/_coding/jules-studio/src/components/SessionsList.jsx:35:25)
+
+stderr | src/components/__tests__/SessionsList.test.jsx > SessionsList Component > handles automation mode toggle in creation modal
+Warning: An update to SessionsList inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at SessionsList (/home/tazztone/_coding/jules-studio/src/components/SessionsList.jsx:35:25)
+Warning: An update to SessionsList inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at SessionsList (/home/tazztone/_coding/jules-studio/src/components/SessionsList.jsx:35:25)
+Warning: An update to SessionsList inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at SessionsList (/home/tazztone/_coding/jules-studio/src/components/SessionsList.jsx:35:25)
+
+stderr | src/components/__tests__/SessionDetailView.test.jsx > SessionDetailView Component > handles rate limiting with exponential backoff
+Error polling activities: Error: API Error (429): Rate limited
+    at /home/tazztone/_coding/jules-studio/src/components/__tests__/SessionDetailView.test.jsx:82:38
+    at file:///home/tazztone/_coding/jules-studio/node_modules/@vitest/runner/dist/index.js:145:11
+    at file:///home/tazztone/_coding/jules-studio/node_modules/@vitest/runner/dist/index.js:915:26
+    at file:///home/tazztone/_coding/jules-studio/node_modules/@vitest/runner/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout (file:///home/tazztone/_coding/jules-studio/node_modules/@vitest/runner/dist/index.js:1209:10)
+    at file:///home/tazztone/_coding/jules-studio/node_modules/@vitest/runner/dist/index.js:1653:37
+    at Traces.$ (file:///home/tazztone/_coding/jules-studio/node_modules/vitest/dist/chunks/traces.CCmnQaNT.js:142:27)
+    at trace (file:///home/tazztone/_coding/jules-studio/node_modules/vitest/dist/chunks/test.B8ej_ZHS.js:239:21)
+    at runTest (file:///home/tazztone/_coding/jules-studio/node_modules/@vitest/runner/dist/index.js:1653:12)
+
+stderr | src/components/__tests__/SessionDetailView.test.jsx > SessionDetailView Component > handles rate limiting with exponential backoff
+Error polling activities: Error: API Error (429): Rate limited
+    at /home/tazztone/_coding/jules-studio/src/components/__tests__/SessionDetailView.test.jsx:82:38
+    at file:///home/tazztone/_coding/jules-studio/node_modules/@vitest/runner/dist/index.js:145:11
+    at file:///home/tazztone/_coding/jules-studio/node_modules/@vitest/runner/dist/index.js:915:26
+    at file:///home/tazztone/_coding/jules-studio/node_modules/@vitest/runner/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout (file:///home/tazztone/_coding/jules-studio/node_modules/@vitest/runner/dist/index.js:1209:10)
+    at file:///home/tazztone/_coding/jules-studio/node_modules/@vitest/runner/dist/index.js:1653:37
+    at Traces.$ (file:///home/tazztone/_coding/jules-studio/node_modules/vitest/dist/chunks/traces.CCmnQaNT.js:142:27)
+    at trace (file:///home/tazztone/_coding/jules-studio/node_modules/vitest/dist/chunks/test.B8ej_ZHS.js:239:21)
+    at runTest (file:///home/tazztone/_coding/jules-studio/node_modules/@vitest/runner/dist/index.js:1653:12)
+
+ [32m✓[39m src/__tests__/App.test.jsx [2m([22m[2m3 tests[22m[2m)[22m[32m 112[2mms[22m[39m
+ [32m✓[39m src/components/__tests__/SessionsList.test.jsx [2m([22m[2m8 tests[22m[2m)[22m[32m 175[2mms[22m[39m
+stderr | src/components/__tests__/SessionDetailView.test.jsx > SessionDetailView Component > renders BashOutput and Media artifacts
+Warning: An update to SessionDetailView inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at SessionDetailView (/home/tazztone/_coding/jules-studio/src/components/SessionDetailView.jsx:86:30)
+
+stderr | src/components/__tests__/SessionDetailView.test.jsx > SessionDetailView Component > renders BashOutput and Media artifacts
+Warning: An update to SessionDetailView inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at SessionDetailView (/home/tazztone/_coding/jules-studio/src/components/SessionDetailView.jsx:86:30)
+Warning: An update to SessionDetailView inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at SessionDetailView (/home/tazztone/_coding/jules-studio/src/components/SessionDetailView.jsx:86:30)
+Warning: An update to SessionDetailView inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at SessionDetailView (/home/tazztone/_coding/jules-studio/src/components/SessionDetailView.jsx:86:30)
+
+stderr | src/components/__tests__/SessionDetailView.test.jsx > SessionDetailView Component > renders BashOutput and Media artifacts
+Warning: An update to SessionDetailView inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at SessionDetailView (/home/tazztone/_coding/jules-studio/src/components/SessionDetailView.jsx:86:30)
+Warning: An update to SessionDetailView inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at SessionDetailView (/home/tazztone/_coding/jules-studio/src/components/SessionDetailView.jsx:86:30)
+Warning: An update to SessionDetailView inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at SessionDetailView (/home/tazztone/_coding/jules-studio/src/components/SessionDetailView.jsx:86:30)
+
+stderr | src/components/__tests__/SessionDetailView.test.jsx > SessionDetailView Component > switches tabs from timeline deep-links
+Warning: An update to SessionDetailView inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at SessionDetailView (/home/tazztone/_coding/jules-studio/src/components/SessionDetailView.jsx:86:30)
+Warning: An update to SessionDetailView inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at SessionDetailView (/home/tazztone/_coding/jules-studio/src/components/SessionDetailView.jsx:86:30)
+
+stderr | src/components/__tests__/SessionDetailView.test.jsx > SessionDetailView Component > alerts user on generic API failure
+Error polling activities: Error: Internal Server Error
+    at /home/tazztone/_coding/jules-studio/src/components/__tests__/SessionDetailView.test.jsx:180:42
+    at file:///home/tazztone/_coding/jules-studio/node_modules/@vitest/runner/dist/index.js:145:11
+    at file:///home/tazztone/_coding/jules-studio/node_modules/@vitest/runner/dist/index.js:915:26
+    at file:///home/tazztone/_coding/jules-studio/node_modules/@vitest/runner/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout (file:///home/tazztone/_coding/jules-studio/node_modules/@vitest/runner/dist/index.js:1209:10)
+    at file:///home/tazztone/_coding/jules-studio/node_modules/@vitest/runner/dist/index.js:1653:37
+    at Traces.$ (file:///home/tazztone/_coding/jules-studio/node_modules/vitest/dist/chunks/traces.CCmnQaNT.js:142:27)
+    at trace (file:///home/tazztone/_coding/jules-studio/node_modules/vitest/dist/chunks/test.B8ej_ZHS.js:239:21)
+    at runTest (file:///home/tazztone/_coding/jules-studio/node_modules/@vitest/runner/dist/index.js:1653:12)
+
+ [31m❯[39m src/components/__tests__/SessionDetailView.test.jsx [2m([22m[2m9 tests[22m[2m | [22m[31m4 failed[39m[2m)[22m[33m 1233[2mms[22m[39m
+     [32m✓[39m renders session details and activity timeline[32m 59[2mms[22m[39m
+     [32m✓[39m handles plan approval[32m 34[2mms[22m[39m
+     [32m✓[39m sends messages correctly[32m 23[2mms[22m[39m
+     [32m✓[39m handles rate limiting with exponential backoff[32m 15[2mms[22m[39m
+     [32m✓[39m focuses chat input when Suggest Changes is clicked[32m 30[2mms[22m[39m
+[31m     [31m×[31m displays the correct local CLI pull command and handles copying[39m[32m 27[2mms[22m[39m
+[31m     [31m×[31m renders BashOutput and Media artifacts[39m[32m 19[2mms[22m[39m
+[31m     [31m×[31m switches tabs from timeline deep-links[39m[32m 14[2mms[22m[39m
+[31m     [31m×[31m alerts user on generic API failure[39m[33m 1010[2mms[22m[39m
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/__tests__/CliRecipesView.test.jsx > CliRecipesView Component > copies install command to clipboard
+Error: Vitest cannot be imported in a CommonJS module using require(). Please use "import" instead.
+
+If you are using "import" in your source code, then it's possible it was bundled into require() automatically by your bundler. In that case, do not bundle CommonJS output since it will never work with Vitest, or use dynamic import() which is available in all CommonJS modules.
+ ❯ Object.<anonymous> node_modules/vitest/index.cjs:1:7
+ ❯ src/components/__tests__/CliRecipesView.test.jsx:26:24
+     24| 
+     25|     it('copies install command to clipboard', () => {
+     26|         const { vi } = require('vitest');
+       |                        ^
+     27|         render(<CliRecipesView />);
+     28|         
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  src/components/__tests__/SessionDetailView.test.jsx > SessionDetailView Component > displays the correct local CLI pull command and handles copying
+TestingLibraryElementError: Unable to find an element with the title: Copy to clipboard.
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="flex flex-col h-full animate-in fade-in duration-300"
+    >
+      <div
+        class="flex items-center justify-between mb-6 pb-4 border-b border-gray-800"
+      >
+        <div
+          class="flex items-center gap-4"
+        >
+          <button
+            class="text-gray-400 hover:text-white transition-colors p-2 -ml-2 rounded-lg hover:bg-gray-800"
+          >
+            <svg
+              class="lucide lucide-arrow-left"
+              fill="none"
+              height="20"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="m12 19-7-7 7-7"
+              />
+              <path
+                d="M19 12H5"
+              />
+            </svg>
+          </button>
+          <div>
+            <h2
+              class="text-2xl font-semibold text-white flex items-center gap-3"
+            >
+              Test Session
+              <span
+                class="px-2.5 py-0.5 rounded-full text-xs font-medium border bg-yellow-900/50 text-yellow-300 border-yellow-700/50"
+              >
+                Needs Approval
+              </span>
+            </h2>
+            <div
+              class="flex gap-4 mt-2 text-sm text-gray-400"
+            >
+              <span
+                class="flex items-center gap-1"
+              >
+                <svg
+                  class="lucide lucide-github"
+                  fill="none"
+                  height="14"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  width="14"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"
+                  />
+                  <path
+                    d="M9 18c-4.51 2-5-2-7-2"
+                  />
+                </svg>
+                 
+                src1
+              </span>
+              <span
+                class="flex items-center gap-1"
+              >
+                <svg
+                  class="lucide lucide-git-pull-request"
+                  fill="none"
+                  height="14"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  width="14"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <circle
+                    cx="18"
+                    cy="18"
+                    r="3"
+                  />
+                  <circle
+                    cx="6"
+                    cy="6"
+                    r="3"
+                  />
+                  <path
+                    d="M13 6h3a2 2 0 0 1 2 2v7"
+                  />
+                  <line
+                    x1="6"
+                    x2="6"
+                    y1="9"
+                    y2="21"
+                  />
+                </svg>
+                 
+                main
+              </span>
+              <span
+                class="flex items-center gap-1"
+              >
+                <svg
+                  class="lucide lucide-clock"
+                  fill="none"
+                  height="14"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  width="14"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="10"
+                  />
+                  <polyline
+                    points="12 6 12 12 16 14"
+                  />
+                </svg>
+                 
+                7:33:02 PM
+              </span>
+            </div>
+          </div>
+        </div>
+        <div
+          class="flex gap-2"
+        >
+          <button
+            class="bg-red-900/20 hover:bg-red-900/40 text-red-400 p-2 rounded-lg transition-colors border border-red-900/50 disabled:opacity-50"
+            title="Delete Session"
+          >
+            <svg
+              class="lucide lucide-trash2"
+              fill="none"...
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/components/__tests__/SessionDetailView.test.jsx:136:32
+    134|         expect(screen.getByText(/jules remote pull --session sessions\…
+    135|         
+    136|         const copyBtn = screen.getByTitle('Copy to clipboard');
+       |                                ^
+    137|         fireEvent.click(copyBtn);
+    138|         expect(navigator.clipboard.writeText).toHaveBeenCalledWith(exp…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  src/components/__tests__/SessionDetailView.test.jsx > SessionDetailView Component > renders BashOutput and Media artifacts
+TestingLibraryElementError: Unable to find an element with the text: Timeline. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="flex flex-col h-full animate-in fade-in duration-300"
+    >
+      <div
+        class="flex items-center justify-between mb-6 pb-4 border-b border-gray-800"
+      >
+        <div
+          class="flex items-center gap-4"
+        >
+          <button
+            class="text-gray-400 hover:text-white transition-colors p-2 -ml-2 rounded-lg hover:bg-gray-800"
+          >
+            <svg
+              class="lucide lucide-arrow-left"
+              fill="none"
+              height="20"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="m12 19-7-7 7-7"
+              />
+              <path
+                d="M19 12H5"
+              />
+            </svg>
+          </button>
+          <div>
+            <h2
+              class="text-2xl font-semibold text-white flex items-center gap-3"
+            >
+              Test Session
+              <span
+                class="px-2.5 py-0.5 rounded-full text-xs font-medium border bg-yellow-900/50 text-yellow-300 border-yellow-700/50"
+              >
+                Needs Approval
+              </span>
+            </h2>
+            <div
+              class="flex gap-4 mt-2 text-sm text-gray-400"
+            >
+              <span
+                class="flex items-center gap-1"
+              >
+                <svg
+                  class="lucide lucide-github"
+                  fill="none"
+                  height="14"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  width="14"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"
+                  />
+                  <path
+                    d="M9 18c-4.51 2-5-2-7-2"
+                  />
+                </svg>
+                 
+                src1
+              </span>
+              <span
+                class="flex items-center gap-1"
+              >
+                <svg
+                  class="lucide lucide-git-pull-request"
+                  fill="none"
+                  height="14"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  width="14"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <circle
+                    cx="18"
+                    cy="18"
+                    r="3"
+                  />
+                  <circle
+                    cx="6"
+                    cy="6"
+                    r="3"
+                  />
+                  <path
+                    d="M13 6h3a2 2 0 0 1 2 2v7"
+                  />
+                  <line
+                    x1="6"
+                    x2="6"
+                    y1="9"
+                    y2="21"
+                  />
+                </svg>
+                 
+                main
+              </span>
+              <span
+                class="flex items-center gap-1"
+              >
+                <svg
+                  class="lucide lucide-clock"
+                  fill="none"
+                  height="14"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  width="14"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="10"
+                  />
+                  <polyline
+                    points="12 6 12 12 16 14"
+                  />
+                </svg>
+                 
+                7:33:02 PM
+              </span>
+            </div>
+          </div>
+        </div>
+        <div
+          class="flex gap-2"
+        >
+          <button
+            class="bg-red-900/20 hover:bg-red-900/40 text-red-400 p-2 rounded-lg transition-colors border border-red-900/50 disabled:opacity-50"
+            title="Delete Session"
+          >
+            <svg
+              class="lucide lucide-trash2"
+              fill="none"
+              height="20"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M3 6h18"
+              />
+              <path
+                d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"
+              />
+              <path
+                d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"
+              />
+              <line
+                x1="10"
+                x2="10"
+                y1="11"
+                y2="17"
+              />
+              <line
+                x1="14"
+                x2="14"
+                y1="11"
+                y2="17"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div
+        class="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-0"
+      >
+        <div
+          class="flex flex-col bg-gray-800/30 border border-gray-800 rounded-xl overflow-hidden"
+        >
+          <div
+            class="p-4 bg-gray-800/50 border-b border-gray-800 font-medium text-gray-200 flex items-center justify-between"
+          >
+            <div
+              class="flex items-center gap-2"
+            >
+              <svg
+                class="lucide lucide-activity text-blue-400"
+                fill="none"
+                height="18"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="18"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"
+                />
+              </svg>
+               Activity Timeline
+            </div>
+            <svg
+              class="lucide lucide-loader-circle text-gray-500 animate-spin"
+              fill="none"
+              height="16"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="16"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M21 12a9 9 0 1 1-6.219-8.56"
+              />
+            </svg>
+          </div>
+          <div
+            class="flex-1 overflow-y-auto p-4 space-y-6"
+          />
+          <div
+            class="p-4 bg-gray-800/50 border-t border-gray-800"
+          >
+            <form
+              class="relative"
+            >
+              <input
+                class="w-full bg-gray-900 border border-gray-700 rounded-lg pl-4 pr-12 py-3 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors disabled:opacity-50"
+                placeholder="Send a message to Jules..."
+                type="text"
+                value=""
+              />
+              <button
+                class="absolute right-2 top-2 bottom-2 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 text-white rounded-md px-3 flex items-center justify-center transition-colors"
+                disabled=""
+                type="submit"
+              >
+                <svg
+                  class="lucide lucide-play"
+                  fill="currentColor"
+                  height="16"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  width="16"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <polygon
+                    points="6 3 20 12 6 21 6 3"
+                  />
+                </svg>
+              </button>
+            </form>
+          </div>
+        </div>
+        <div
+          class="flex flex-col bg-gray-800/30 border border-gray-800 rounded-xl overflow-hidden"
+        >
+          <div
+            class="flex border-b border-gray-800 bg-gray-800/50"
+          >
+            <button
+              class="flex-1 py-3 text-sm font-medium border-b-2 transition-colors border-purple-500 text-purple-400"
+            >
+              Plan & Review
+            </button>
+            <button
+              class="flex-1 py-3 text-sm font-medium border-b-2 transition-colors border-transparent text-gray-400 hover:text-gray-200"
+            >
+              Artifacts & Code
+            </button>
+          </div>
+          <div
+            class="flex-1 overflow-y-auto p-4"
+          >
+            <div
+              class="space-y-6"
+            >
+              <div
+                class="h-full flex flex-col items-center justify-center text-gray-500 space-y-4"
+              >
+                <svg
+                  class="lucide lucide-activity opacity-20"
+                  fill="none"
+                  height="48"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  width="48"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"
+                  />
+                </svg>
+                <p>
+                  No plan generated yet.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/components/__tests__/SessionDetailView.test.jsx:160:32
+    158|         
+    159|         // Switch to timeline
+    160|         fireEvent.click(screen.getByText('Timeline'));
+       |                                ^
+    161|         
+    162|         await waitFor(() => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  src/components/__tests__/SessionDetailView.test.jsx > SessionDetailView Component > switches tabs from timeline deep-links
+TestingLibraryElementError: Unable to find an element with the text: Timeline. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="flex flex-col h-full animate-in fade-in duration-300"
+    >
+      <div
+        class="flex items-center justify-between mb-6 pb-4 border-b border-gray-800"
+      >
+        <div
+          class="flex items-center gap-4"
+        >
+          <button
+            class="text-gray-400 hover:text-white transition-colors p-2 -ml-2 rounded-lg hover:bg-gray-800"
+          >
+            <svg
+              class="lucide lucide-arrow-left"
+              fill="none"
+              height="20"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="m12 19-7-7 7-7"
+              />
+              <path
+                d="M19 12H5"
+              />
+            </svg>
+          </button>
+          <div>
+            <h2
+              class="text-2xl font-semibold text-white flex items-center gap-3"
+            >
+              Test Session
+              <span
+                class="px-2.5 py-0.5 rounded-full text-xs font-medium border bg-yellow-900/50 text-yellow-300 border-yellow-700/50"
+              >
+                Needs Approval
+              </span>
+            </h2>
+            <div
+              class="flex gap-4 mt-2 text-sm text-gray-400"
+            >
+              <span
+                class="flex items-center gap-1"
+              >
+                <svg
+                  class="lucide lucide-github"
+                  fill="none"
+                  height="14"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  width="14"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"
+                  />
+                  <path
+                    d="M9 18c-4.51 2-5-2-7-2"
+                  />
+                </svg>
+                 
+                src1
+              </span>
+              <span
+                class="flex items-center gap-1"
+              >
+                <svg
+                  class="lucide lucide-git-pull-request"
+                  fill="none"
+                  height="14"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  width="14"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <circle
+                    cx="18"
+                    cy="18"
+                    r="3"
+                  />
+                  <circle
+                    cx="6"
+                    cy="6"
+                    r="3"
+                  />
+                  <path
+                    d="M13 6h3a2 2 0 0 1 2 2v7"
+                  />
+                  <line
+                    x1="6"
+                    x2="6"
+                    y1="9"
+                    y2="21"
+                  />
+                </svg>
+                 
+                main
+              </span>
+              <span
+                class="flex items-center gap-1"
+              >
+                <svg
+                  class="lucide lucide-clock"
+                  fill="none"
+                  height="14"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  width="14"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="10"
+                  />
+                  <polyline
+                    points="12 6 12 12 16 14"
+                  />
+                </svg>
+                 
+                7:33:02 PM
+              </span>
+            </div>
+          </div>
+        </div>
+        <div
+          class="flex gap-2"
+        >
+          <button
+            class="bg-red-900/20 hover:bg-red-900/40 text-red-400 p-2 rounded-lg transition-colors border border-red-900/50 disabled:opacity-50"
+            title="Delete Session"
+          >
+            <svg
+              class="lucide lucide-trash2"
+              fill="none"
+              height="20"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M3 6h18"
+              />
+              <path
+                d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"
+              />
+              <path
+                d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"
+              />
+              <line
+                x1="10"
+                x2="10"
+                y1="11"
+                y2="17"
+              />
+              <line
+                x1="14"
+                x2="14"
+                y1="11"
+                y2="17"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div
+        class="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-0"
+      >
+        <div
+          class="flex flex-col bg-gray-800/30 border border-gray-800 rounded-xl overflow-hidden"
+        >
+          <div
+            class="p-4 bg-gray-800/50 border-b border-gray-800 font-medium text-gray-200 flex items-center justify-between"
+          >
+            <div
+              class="flex items-center gap-2"
+            >
+              <svg
+                class="lucide lucide-activity text-blue-400"
+                fill="none"
+                height="18"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="18"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"
+                />
+              </svg>
+               Activity Timeline
+            </div>
+            <svg
+              class="lucide lucide-loader-circle text-gray-500 animate-spin"
+              fill="none"
+              height="16"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="16"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M21 12a9 9 0 1 1-6.219-8.56"
+              />
+            </svg>
+          </div>
+          <div
+            class="flex-1 overflow-y-auto p-4 space-y-6"
+          />
+          <div
+            class="p-4 bg-gray-800/50 border-t border-gray-800"
+          >
+            <form
+              class="relative"
+            >
+              <input
+                class="w-full bg-gray-900 border border-gray-700 rounded-lg pl-4 pr-12 py-3 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors disabled:opacity-50"
+                placeholder="Send a message to Jules..."
+                type="text"
+                value=""
+              />
+              <button
+                class="absolute right-2 top-2 bottom-2 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 text-white rounded-md px-3 flex items-center justify-center transition-colors"
+                disabled=""
+                type="submit"
+              >
+                <svg
+                  class="lucide lucide-play"
+                  fill="currentColor"
+                  height="16"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  width="16"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <polygon
+                    points="6 3 20 12 6 21 6 3"
+                  />
+                </svg>
+              </button>
+            </form>
+          </div>
+        </div>
+        <div
+          class="flex flex-col bg-gray-800/30 border border-gray-800 rounded-xl overflow-hidden"
+        >
+          <div
+            class="flex border-b border-gray-800 bg-gray-800/50"
+          >
+            <button
+              class="flex-1 py-3 text-sm font-medium border-b-2 transition-colors border-purple-500 text-purple-400"
+            >
+              Plan & Review
+            </button>
+            <button
+              class="flex-1 py-3 text-sm font-medium border-b-2 transition-colors border-transparent text-gray-400 hover:text-gray-200"
+            >
+              Artifacts & Code
+            </button>
+          </div>
+          <div
+            class="flex-1 overflow-y-auto p-4"
+          >
+            <div
+              class="space-y-6"
+            >
+              <div
+                class="h-full flex flex-col items-center justify-center text-gray-500 space-y-4"
+              >
+                <svg
+                  class="lucide lucide-activity opacity-20"
+                  fill="none"
+                  height="48"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  width="48"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"
+                  />
+                </svg>
+                <p>
+                  No plan generated yet.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/components/__tests__/SessionDetailView.test.jsx:172:32
+    170|         render(<SessionDetailView session={mockSession} onBack={() => …
+    171|         
+    172|         fireEvent.click(screen.getByText('Timeline'));
+       |                                ^
+    173|         await waitFor(() => expect(screen.getByText('View Plan')).toBe…
+    174|         
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  src/components/__tests__/SessionDetailView.test.jsx > SessionDetailView Component > alerts user on generic API failure
+AssertionError: expected "vi.fn()" to be called with arguments: [ StringContaining{…} ]
+
+Number of calls: 0
+
+
+Ignored nodes: comments, script, style
+<html>
+  <head />
+  <body>
+    <div>
+      <div
+        class="flex flex-col h-full animate-in fade-in duration-300"
+      >
+        <div
+          class="flex items-center justify-between mb-6 pb-4 border-b border-gray-800"
+        >
+          <div
+            class="flex items-center gap-4"
+          >
+            <button
+              class="text-gray-400 hover:text-white transition-colors p-2 -ml-2 rounded-lg hover:bg-gray-800"
+            >
+              <svg
+                class="lucide lucide-arrow-left"
+                fill="none"
+                height="20"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="20"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="m12 19-7-7 7-7"
+                />
+                <path
+                  d="M19 12H5"
+                />
+              </svg>
+            </button>
+            <div>
+              <h2
+                class="text-2xl font-semibold text-white flex items-center gap-3"
+              >
+                Test Session
+                <span
+                  class="px-2.5 py-0.5 rounded-full text-xs font-medium border bg-yellow-900/50 text-yellow-300 border-yellow-700/50"
+                >
+                  Needs Approval
+                </span>
+              </h2>
+              <div
+                class="flex gap-4 mt-2 text-sm text-gray-400"
+              >
+                <span
+                  class="flex items-center gap-1"
+                >
+                  <svg
+                    class="lucide lucide-github"
+                    fill="none"
+                    height="14"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                    width="14"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"
+                    />
+                    <path
+                      d="M9 18c-4.51 2-5-2-7-2"
+                    />
+                  </svg>
+                   
+                  src1
+                </span>
+                <span
+                  class="flex items-center gap-1"
+                >
+                  <svg
+                    class="lucide lucide-git-pull-request"
+                    fill="none"
+                    height="14"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                    width="14"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="3"
+                    />
+                    <circle
+                      cx="6"
+                      cy="6"
+                      r="3"
+                    />
+                    <path
+                      d="M13 6h3a2 2 0 0 1 2 2v7"
+                    />
+                    <line
+                      x1="6"
+                      x2="6"
+                      y1="9"
+                      y2="21"
+                    />
+                  </svg>
+                   
+                  main
+                </span>
+                <span
+                  class="flex items-center gap-1"
+                >
+                  <svg
+                    class="lucide lucide-clock"
+                    fill="none"
+                    height="14"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                    width="14"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="10"
+                    />
+                    <polyline
+                      points="12 6 12 12 16 14"
+                    />
+                  </svg>
+                   
+                  7:33:02 PM
+                </span>
+              </div>
+            </div>
+          </div>
+          <div
+            class="flex gap-2"
+          >
+            <button
+              class="bg-red-900/20 hover:bg-red-900/40 text-red-400 p-2 rounded-lg transition-colors border border-red-900/50 disabled:opacity-50"
+              title="Delete Session"
+            >
+              <svg
+                class="lucide lucide-trash2"
+                fill="none"
+                height="20"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                width="20"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M3 6h18"
+                />
+                <path
+                  d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"
+                />
+                <path
+                  d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"
+                />
+                <line
+                  x1="10"
+                  x2="10"
+                  y1="11"
+                  y2="17"
+                />
+                <line
+                  x1="14"
+                  x2="14"
+                  y1="11"
+                  y2="17"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div
+          class="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-0"
+        >
+          <div
+            class="flex flex-col bg-gray-800/30 border border-gray-800 rounded-xl overflow-hidden"
+          >
+            <div
+              class="p-4 bg-gray-800/50 border-b border-gray-800 font-medium text-gray-200 flex items-center justify-between"
+            >
+              <div
+                class="flex items-center gap-2"
+              >
+                <svg
+                  class="lucide lucide-activity text-blue-400"
+                  fill="none"
+                  height="18"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                  width="18"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"
+                  />
+                </svg>
+                 Activity Timeline
+              </div>
+            </div>
+            <div
+              class="flex-1 overflow-y-auto p-4 space-y-6"
+            >
+              <div
+                class="text-gray-500 text-sm text-center py-8"
+              >
+                No activities recorded yet.
+              </div>
+            </div>
+            <div
+              class="p-4 bg-gray-800/50 border-t border-gray-800"
+            >
+              <form
+                class="relative"
+              >
+                <input
+                  class="w-full bg-gray-900 border border-gray-700 rounded-lg pl-4 pr-12 py-3 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors disabled:opacity-50"
+                  placeholder="Send a message to Jules..."
+                  type="text"
+                  value=""
+                />
+                <button
+                  class="absolute right-2 top-2 bottom-2 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 text-white rounded-md px-3 flex items-center justify-center transition-colors"
+                  disabled=""
+                  type="submit"
+                >
+                  <svg
+                    class="lucide lucide-play"
+                    fill="currentColor"
+                    height="16"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                    width="16"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <polygon
+                      points="6 3 20 12 6 21 6 3"
+                    />
+                  </svg>
+                </button>
+              </form>
+            </div>
+          </div>
+          <div
+            class="flex flex-col bg-gray-800/30 border border-gray-800 rounded-xl overflow-hidden"
+          >
+            <div
+              class="flex border-b border-gray-800 bg-gray-800/50"
+            >
+              <button
+                class="flex-1 py-3 text-sm font-medium border-b-2 transition-colors border-purple-500 text-purple-400"
+              >
+                Plan & Review
+              </button>
+              <button
+                class="flex-1 py-3 text-sm font-medium border-b-2 transition-colors border-transparent text-gray-400 hover:text-gray-200"
+              >
+                Artifacts & Code
+              </button>
+            </div>
+            <div
+              class="flex-1 overflow-y-auto p-4"
+            >
+              <div
+                class="space-y-6"
+              >
+                <div
+                  class="h-full flex flex-col items-center justify-center text-gray-500 space-y-4"
+                >
+                  <svg
+                    class="lucide lucide-activity opacity-20"
+                    fill="none"
+                    height="48"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                    width="48"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"
+                    />
+                  </svg>
+                  <p>
+                    No plan generated yet.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+ ❯ src/components/__tests__/SessionDetailView.test.jsx:184:34
+    182|         
+    183|         await waitFor(() => {
+    184|             expect(window.alert).toHaveBeenCalledWith(expect.stringCon…
+       |                                  ^
+    185|         });
+    186|     });
+ ❯ runWithExpensiveErrorDiagnosticsDisabled node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+[2m Test Files [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m5 passed[39m[22m[90m (7)[39m
+[2m      Tests [22m [1m[31m5 failed[39m[22m[2m | [22m[1m[32m31 passed[39m[22m[90m (36)[39m
+[2m   Start at [22m 19:33:01
+[2m   Duration [22m 2.15s[2m (transform 503ms, setup 375ms, import 1.45s, tests 1.72s, environment 2.96s)[22m
+
