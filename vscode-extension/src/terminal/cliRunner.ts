@@ -23,6 +23,13 @@ export class CliRunner {
             return;
         }
 
+        const confirm = await vscode.window.showWarningMessage(
+            `This will download and apply code changes from session "${session.title || session.id}" to your local workspace. Proceed?`,
+            { modal: true },
+            'Apply Changes'
+        );
+        if (confirm !== 'Apply Changes') return;
+
         if (!this.terminal || this.terminal.exitStatus !== undefined) {
             this.terminal = vscode.window.createTerminal('Jules CLI');
         }

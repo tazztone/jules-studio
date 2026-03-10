@@ -36,4 +36,28 @@ suite('ClientManager Test Suite', () => {
 
         assert.notStrictEqual(client1, client2, 'Client should be recreated after reset');
     });
+
+    test('getClient throws when key is missing', async () => {
+        const mockAuth = {
+            getApiKey: async () => undefined
+        } as any;
+
+        const manager = new ClientManager(mockAuth);
+        await assert.rejects(manager.getClient(), /API Key missing/);
+    });
+
+    test('Cache rotates automatically if key in storage changes', async () => {
+        let currentKey = 'key1';
+        const mockAuth = {
+            getApiKey: async () => currentKey
+        } as any;
+
+        const manager = new ClientManager(mockAuth);
+        const client1 = await manager.getClient();
+        
+        currentKey = 'key3'; // Change key without calling reset()
+        const client2 = await manager.getClient();
+
+        assert.notStrictEqual(client1, client2, 'Client should be rotated automatically');
+    });
 });

@@ -2,7 +2,8 @@
   "name": "jules-vscode",
   "displayName": "Jules Studio",
   "description": "Manage Google Jules AI coding sessions directly from VS Code — session sidebar, plan approval, inline diffs, CodeLens actions, and proactive notifications.",
-  "version": "0.1.0",
+  "version": "0.2.0-beta.1",
+  "preview": true,
   "publisher": "tazztone",
   "icon": "media/jules-icon-128.png",
   "repository": {
@@ -14,7 +15,14 @@
     "url": "https://github.com/tazztone/jules-studio/issues"
   },
   "license": "MIT",
-  "keywords": ["jules", "AI", "coding agent", "google", "automation", "deepmind"],
+  "keywords": [
+    "jules",
+    "AI",
+    "coding agent",
+    "google",
+    "automation",
+    "deepmind"
+  ],
   "galleryBanner": {
     "color": "#1e1e2e",
     "theme": "dark"
@@ -174,26 +182,26 @@
           "when": "jules:hasApiKey"
         }
       ]
-    }
-  },
-  "configuration": {
-    "title": "Jules Studio",
-    "properties": {
-      "jules.codeLens.enabled": {
-        "type": "boolean",
-        "default": true,
-        "description": "Show Jules CodeLens actions above functions and classes."
-      },
-      "jules.autoRefreshInterval": {
-        "type": "number",
-        "default": 60,
-        "minimum": 0,
-        "description": "Auto-refresh interval in seconds (0 to disable). Enables proactive notifications."
-      },
-      "jules.autoApplyAfterApproval": {
-        "type": "boolean",
-        "default": false,
-        "description": "Automatically pull and apply changes when a session completes."
+    },
+    "configuration": {
+      "title": "Jules Studio",
+      "properties": {
+        "jules.codeLens.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show Jules CodeLens actions above functions and classes."
+        },
+        "jules.autoRefreshInterval": {
+          "type": "number",
+          "default": 60,
+          "minimum": 0,
+          "description": "Auto-refresh interval in seconds (0 to disable). Enables proactive notifications."
+        },
+        "jules.autoApplyAfterApproval": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically pull and apply changes when a session completes."
+        }
       }
     }
   },

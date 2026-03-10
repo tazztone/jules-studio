@@ -176,12 +176,16 @@
             const actions = document.getElementById('actionPanel');
             actions.innerHTML = '';
             if (session.state === 'AWAITING_PLAN_APPROVAL') {
-                actions.innerHTML += '<button onclick="approvePlan()">Approve Plan</button>';
+                actions.innerHTML += '<button id="approveBtn" onclick="approvePlan()">Approve Plan</button>';
             }
             if (session.state === 'COMPLETED') {
-                actions.innerHTML += '<button onclick="applyPatch()">Pull & Apply Changes to Local Files</button>';
+                actions.innerHTML += '<button id="applyBtn" onclick="applyPatch()">Pull & Apply Changes to Local Files</button>';
             }
             actions.innerHTML += '<button onclick="openInBrowser()">Open in Browser</button>';
+
+            const sendBtn = document.getElementById('sendBtn');
+            sendBtn.disabled = false;
+            sendBtn.textContent = 'Send Message';
         }
 
         function getEmptyStateHtml(state) {
@@ -234,13 +238,32 @@
             return div.innerHTML;
         }
 
-        function approvePlan() { vscode.postMessage({ command: 'approve' }); }
-        function applyPatch() { vscode.postMessage({ command: 'applyPatch' }); }
+        function approvePlan() { 
+            const btn = document.getElementById('approveBtn');
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Approving...';
+            }
+            vscode.postMessage({ command: 'approve' }); 
+        }
+
+        function applyPatch() { 
+            const btn = document.getElementById('applyBtn');
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Applying...';
+            }
+            vscode.postMessage({ command: 'applyPatch' }); 
+        }
+
         function openInBrowser() { vscode.postMessage({ command: 'openBrowser' }); }
         
         document.getElementById('sendBtn').onclick = () => {
             const input = document.getElementById('messageInput');
+            const btn = document.getElementById('sendBtn');
             if (input.value.trim()) {
+                btn.disabled = true;
+                btn.textContent = 'Sending...';
                 vscode.postMessage({ command: 'sendMessage', text: input.value.trim() });
                 input.value = '';
             }

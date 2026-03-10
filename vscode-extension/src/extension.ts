@@ -8,11 +8,13 @@ import { CliRunner } from './terminal/cliRunner';
 import { StatusBarManager } from './views/statusBar';
 import { JulesCodeLensProvider } from './codelens/julesCodeLensProvider';
 
+let treeProvider: SessionsTreeProvider;
+
 export async function activate(context: vscode.ExtensionContext) {
     const authManager = new AuthManager(context);
     const clientManager = new ClientManager(authManager);
     const statusBarManager = new StatusBarManager();
-    const treeProvider = new SessionsTreeProvider(clientManager, (sessions) => {
+    treeProvider = new SessionsTreeProvider(clientManager, (sessions) => {
         statusBarManager.update(sessions);
     });
     
@@ -167,14 +169,29 @@ export async function activate(context: vscode.ExtensionContext) {
         }),
 
         vscode.commands.registerCommand('jules.sendTerminalToJules', async () => {
-            const errorText = await vscode.window.showInputBox({
-                prompt: 'Paste the terminal error output',
-                placeHolder: 'e.g., TypeError: Cannot read properties of undefined...',
-                value: '',
+            const doc = await vscode.workspace.openTextDocument({
+                content: '\n\n// --- PASTE TERMINAL ERROR OUTPUT ABOVE THIS LINE ---\n// Once pasted, save (Ctrl+S) or close this file to proceed, \n// or click "Create Session" in the notification below.',
+                language: 'log'
             });
-            if (!errorText) return;
-            createSessionCommand(clientManager, () => treeProvider.refresh(), 
-                `Fix the following terminal error:\n\n\`\`\`\n${errorText}\n\`\`\``);
+            await vscode.window.showTextDocument(doc);
+            
+            const selection = await vscode.window.showInformationMessage(
+                'Paste your terminal error into the opened file, then click "Create Session".',
+                'Create Session'
+            );
+
+            if (selection === 'Create Session') {
+                const errorText = doc.getText().split('// --- PASTE TERMINAL ERROR OUTPUT ABOVE THIS LINE ---')[0].trim();
+                if (!errorText) {
+                    vscode.window.showWarningMessage('No error text found. Please paste the error above the marker.');
+                    return;
+                }
+                // Close the doc: standard way is to close the editor
+                await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+                
+                await createSessionCommand(clientManager, () => treeProvider.refresh(), 
+                    `Fix the following terminal error:\n\n\`\`\`\n${errorText}\n\`\`\``);
+            }
         }),
 
         vscode.commands.registerCommand('jules.codeLensAction', async (uri: vscode.Uri, symbol: any, action: string) => {
@@ -216,5 +233,8 @@ export async function activate(context: vscode.ExtensionContext) {
  * Cleanup on extension deactivation: v0.2 Audit Fix
  */
 export function deactivate() {
+    if (treeProvider) {
+        treeProvider.stopBackgroundPolling();
+    }
     SessionDetailPanel.panels.forEach(panel => panel.dispose());
 }
