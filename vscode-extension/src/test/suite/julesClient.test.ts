@@ -2,8 +2,9 @@ import * as assert from 'assert';
 import { JulesClient } from '../../api/julesClient';
 
 suite('JulesClient Test Suite', function () {
+    this.timeout(10000); // Suite-level timeout
+    
     test('Retry logic handles 429 errors', async function () {
-        this.timeout(10000); // Increase timeout for backoff retries
         let attempts = 0;
         
         // Mock global fetch

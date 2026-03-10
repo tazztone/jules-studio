@@ -4,10 +4,13 @@ All notable changes to **Jules Studio for VS Code** are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.2.0-beta.6] — 2026-03-10
+## [0.2.0-beta.7] — 2026-03-10
 
 ### Fixed
-- **Linting**: Removed unused `pollInterval` reference in `SessionDetailView` that was blocking CI.
+- **Tests**: Fixed a `TypeError` in the extension's unit tests related to Mocha timeout context in async functions.
+- **CI**: Standardized `workflow_call` syntax for better compatibility with GitHub Actions validators.
+
+## [0.2.0-beta.6] — 2026-03-10
 
 ## [0.2.0-beta.5] — 2026-03-10
 
