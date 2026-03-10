@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Github, Plus, Loader2, Search, Trash2, ChevronDown, CheckSquare, Square } from 'lucide-react';
 import { StateBadge, fetchJules, Alert, ConfirmDialog, parseRepoName } from './Common';
 
@@ -44,6 +44,7 @@ const SessionsList = ({ onSelectSession, apiKey }) => {
     const [prompt, setPrompt] = useState('');
     const [title, setTitle] = useState('');
     const [source, setSource] = useState('');
+    const nextPageTokenRef = useRef('');
     const [branch, setBranch] = useState('main');
     const [automationMode, setAutomationMode] = useState('AUTO_CREATE_PR');
     const [requirePlanApproval, setRequirePlanApproval] = useState(true);
@@ -65,26 +66,29 @@ const SessionsList = ({ onSelectSession, apiKey }) => {
         try {
             const queryParams = {
                 pageSize: 20,
-                pageToken: isLoadMore ? nextPageToken : undefined,
+                pageToken: isLoadMore ? nextPageTokenRef.current : undefined,
                 filter: filter || undefined
             };
 
             const sessRes = await fetchJules('/v1alpha/sessions', 'GET', null, apiKey, queryParams);
             const newSessions = sessRes.sessions || [];
             setSessions(prev => isLoadMore ? [...prev, ...newSessions] : newSessions);
-            setNextPageToken(sessRes.nextPageToken || '');
+            const token = sessRes.nextPageToken || '';
+            setNextPageToken(token);
+            nextPageTokenRef.current = token;
 
             if (!isLoadMore) {
                 const srcRes = await fetchJules('/v1alpha/sources', 'GET', null, apiKey);
-                setSources(srcRes.sources || []);
-                if (srcRes.sources?.length > 0 && !source) setSource(srcRes.sources[0].name);
+                const fetchedSources = srcRes.sources || [];
+                setSources(fetchedSources);
+                if (fetchedSources.length > 0 && !source) setSource(fetchedSources[0].name);
             }
         } catch (err) {
             setAlertMsg(String(err.message));
         } finally {
             setLoading(false);
         }
-    }, [apiKey, filter, nextPageToken, source]);
+    }, [apiKey, filter]); // removed source and nextPageToken
 
     useEffect(() => { loadData(); }, [loadData]);
 
