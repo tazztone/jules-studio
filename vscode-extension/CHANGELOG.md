@@ -4,6 +4,25 @@ All notable changes to **Jules Studio for VS Code** are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0-beta.1] — 2026-03-10
+
+### Changed
+- **Beta Preview**: Marked extension as a preview release to manage expectations.
+
+### Fixed
+- **Configuration Bug**: Relocated `configuration` block inside `contributes` in `package.json` so settings correctly appear in VS Code.
+- **Timer Leak**: Ensured background polling stops immediately on extension deactivation.
+- **Test Isolation**: Wrapped global fetch mocks in `try/finally` to prevent test-to-test leakage.
+
+### Improved
+- **Destructive Action Safety**: Added modal confirmation dialog before running terminal-based code applications.
+- **Multi-line Error Input**: "Send Terminal Error to Jules" now opens a temporary text editor for full stack trace support.
+- **Webview UX**: Buttons now provide immediate visual feedback (disabled + loading text) while actions are in flight.
+
+### Testing
+- **Coverage**: Added 16 automated tests covering `RepoDetector` URL parsing, `SessionsTreeProvider` data mapping, and `JulesClient` retry/error logic.
+- **Linting**: Added official ESLint configuration for the project.
+
 ---
 
 ## [0.1.0] — 2026-03-10

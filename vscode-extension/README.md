@@ -1,5 +1,8 @@
 # Jules Studio for VS Code
 
+> [!IMPORTANT]
+> **Beta Preview**: This extension is currently in beta. We are actively refining the experience and appreciate your feedback.
+
 Bring the full power of Jules directly into your IDE. Manage sessions, review and approve plans, apply patches, and get proactive notifications — all without leaving your editor.
 
 ## Prerequisites
