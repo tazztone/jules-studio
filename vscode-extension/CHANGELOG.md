@@ -4,6 +4,11 @@ All notable changes to **Jules Studio for VS Code** are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0-beta.11] — 2026-03-10
+
+### Fixed
+- **CI/CD Pipeline**: Fixed missing `npm ci` dependency step in the `release.yml` publish job that caused `v0.2.0-beta.10` deployments to fail.
+
 ## [0.2.0-beta.10] — 2026-03-10
 
 ### Fixed

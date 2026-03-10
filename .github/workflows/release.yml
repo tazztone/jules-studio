@@ -24,6 +24,10 @@ jobs:
           cache: 'npm'
           cache-dependency-path: 'vscode-extension/package-lock.json'
       
+      - name: Install Dependencies
+        run: npm ci
+        working-directory: vscode-extension
+      
       - name: Publish to Open VSX
         uses: HaaLeo/publish-vscode-extension@v2
         id: publish
