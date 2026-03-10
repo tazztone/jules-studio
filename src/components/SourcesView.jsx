@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Github, Plus, Loader2 } from 'lucide-react';
 import { Badge, fetchJules } from './Common';
 
@@ -13,6 +13,7 @@ const SourcesView = ({ apiKey }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [nextPageToken, setNextPageToken] = useState('');
+    const nextPageTokenRef = useRef('');
 
     const loadSources = React.useCallback(async (isLoadMore = false) => {
         if (!apiKey) {
@@ -25,18 +26,20 @@ const SourcesView = ({ apiKey }) => {
         try {
             const queryParams = {
                 pageSize: 12,
-                pageToken: isLoadMore ? nextPageToken : undefined
+                pageToken: isLoadMore ? nextPageTokenRef.current : undefined
             };
             const res = await fetchJules('/v1alpha/sources', 'GET', null, apiKey, queryParams);
             const newSources = res.sources || [];
             setSources(prev => isLoadMore ? [...prev, ...newSources] : newSources);
-            setNextPageToken(res.nextPageToken || '');
+            const token = res.nextPageToken || '';
+            setNextPageToken(token);
+            nextPageTokenRef.current = token;
         } catch (err) {
             setError(String(err.message));
         } finally {
             setLoading(false);
         }
-    }, [apiKey, nextPageToken]);
+    }, [apiKey]); // nextPageToken intentionally omitted
 
     useEffect(() => {
         loadSources();

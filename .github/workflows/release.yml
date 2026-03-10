@@ -8,6 +8,8 @@ on:
 jobs:
   ci:
     name: Run CI
+    # NOTE: The IDE may report an error below ("Unable to find reusable workflow").
+    # This is a false positive; local resolution fails but GitHub Actions handles it correctly.
     uses: ./.github/workflows/ci.yml
 
   publish:

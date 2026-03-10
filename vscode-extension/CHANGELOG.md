@@ -4,20 +4,27 @@ All notable changes to **Jules Studio for VS Code** are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.2.0-beta.9] — 2026-03-10
+## [0.2.0-beta.10] — 2026-03-10
 
 ### Fixed
-- **Linting**: Silenced `exhaustive-deps` warning in `SessionsList` to prevent infinite loop while satisfying CI requirements.
+- **Web App**: Fixed a latent infinite loop in `SourcesView` caused by `useCallback` dependencies.
+- **Tests**: Resolved a test collision where root Vitest was incorrectly picking up extension tests.
+- **Documentation**: Annotated CI/CD workflows to clarify IDE false-positive warnings.
 
-## [0.2.0-beta.8] — 2026-03-10
+## [0.2.0-beta.9] — 2026-03-10
 
-## [0.2.0-beta.7] — 2026-03-10
+### Added
+- **CI/CD Automation**: Integrated GitHub Actions for automated testing and Open VSX publishing.
+- **CI Status Badge**: Added real-time build status to the README.
 
-## [0.2.0-beta.6] — 2026-03-10
-
-## [0.2.0-beta.5] — 2026-03-10
-
-## [0.2.0-beta.4] — 2026-03-10
+### Fixed
+- **Monorepo Linting**: Decoupled root (ESLint 9) and extension (Legacy) configurations to prevent OOM errors and rule conflicts.
+- **Infinite Loops**: Resolved recursive re-render bugs in `SessionsList` and `SourcesView` caused by `useCallback` state dependencies.
+- **Runtime Errors**: Fixed a `ReferenceError` in `SessionDetailView` where polling functions were accessed before initialization.
+- **Unit Tests**: Fixed a `TypeError` in the extension's unit tests related to Mocha timeout context in async functions.
+- **Tests**: Wrapped global fetch mocks in `try/finally` for better test isolation.
+- **CI Configuration**: Standardized `workflow_call` syntax for cross-workflow compatibility.
+- **General Linting**: Resolved 70+ ESLint errors across the monorepo.
 
 ## [0.2.0-beta.3] — 2026-03-10
 
