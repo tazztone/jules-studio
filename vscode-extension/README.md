@@ -44,6 +44,7 @@ Bring the full power of Jules directly into your IDE. Manage sessions, review an
 
 ### Workspace Intelligence
 - **Repo Auto-Detection**: Parses workspace git remotes and maps them to Jules sources automatically.
+- **Manual Fallback**: If a matching repository is not found, the system prompts you with a **QuickPick** to select the correct Jules source manually.
 - **Current Branch Detection**: "Create Session" pre-fills the branch from your active git branch.
 - **QuickPick Flow**: Streamlined command palette workflow for session creation.
 
@@ -100,9 +101,27 @@ The extension's lifecycle is managed by a structured CI/CD pipeline in GitHub Ac
 |---|---|
 | `Jules: Set API Key` | Configure your authentication (stored in OS Keychain) |
 | `Jules: Create New Session` | Start a new Jules task with QuickPick flow |
+| `Jules: New Session with Selection` | Create a session using highlighted code as context |
 | `Jules: Refresh Sessions` | Reload the session list |
 | `Jules: Open Session Detail` | Open the detail webview for a session |
+| `Jules: Delete Session` | Remove a session from the list and the API |
+| `Jules: Open in Browser` | View the session in the Jules standalone web dashboard |
 | `Jules: Apply Patch (CLI)` | Run `jules remote pull --apply` in the integrated terminal |
+| `Jules: Send Terminal Error to Jules` | Automatically fix terminal tracebacks using Jules |
+
+---
+
+### Recent Feature Highlights (latest Beta)
+
+#### 🛡️ CLI Safety & Confirmations
+Before any local code is modified, Jules now provides a **Modal Warning** for the `Apply Patch` command. This ensures that users explicitly approve the `jules remote pull --apply` action before the CLI touches the filesystem.
+
+#### 🐙 Multi-line Terminal Errors
+The "Send Terminal Error to Jules" command has been enhanced. It now opens a **Virtual Text Editor** buffer, allowing you to paste full, multi-line stack traces or large logs as context for the fix session. Jules will automatically parse the content above the marker:
+`// --- PASTE TERMINAL ERROR OUTPUT ABOVE THIS LINE ---`
+
+#### ⏳ Visual Loading States
+Action buttons in the Session Detail webview (e.g., **Approve Plan**, **Apply Changes**, **Send Message**) now provide immediate visual feedback. Buttons transition to a **Loading State** (e.g., "Approving...") and are temporarily disabled to prevent duplicate requests while API calls are in flight.
 
 ---
 

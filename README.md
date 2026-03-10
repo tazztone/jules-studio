@@ -1,176 +1,78 @@
-# Jules Studio
+# Jules Studio (Web Dashboard)
 
-Jules Studio is a modern, unified dashboard for managing AI-driven coding sessions via the [Jules REST API](https://jules.google/docs/api/reference/overview). It provides a visual interface for delegating tasks, reviewing generated plans, monitoring real-time agent activity, and inspecting code artifacts — both as a web app and as a native VS Code extension.
+Jules Studio is a modern, unified web dashboard for managing AI-driven coding sessions via the [Jules REST API](https://jules.google/docs/api/reference/overview). Built with **React 18**, **Vite**, and **Tailwind CSS**, it provides a visual interface for delegating tasks, reviewing generated plans, monitoring real-time agent activity, and inspecting code artifacts.
 
 ## ✨ Features
 
-### Web App
+### Standalone Web Application
+Jules Studio acts as a full-featured dashboard for managing your AI coding workspace independently of your IDE.
+
 - **Session Control Center**: Create and manage AI coding tasks with granular control over prompt, source repository, branch, and `automationMode` (`AUTO_CREATE_PR` vs `MANUAL`).
 - **Real-time Activity Timeline**: Monitor progress events as they happen, from plan generation to completion.
 - **Interactive Review UI**: Human-in-the-loop workflows for approving agent plans and communicating with Jules through in-session messaging.
+- **Power-User Features**:
+  - **Bulk Operations**: Multi-select sessions with "Select All" and bulk-delete with a single confirmation.
+  - **AIP-160 Search**: Server-side filtering on session lists (press **Enter** to trigger) using standard Google API query syntax.
+  - **Load More Pagination**: Efficient infinite-scroll style navigation for large session lists via `nextPageToken`.
+  - **Local Notes**: Persistent, per-session sticky notes saved securely to your browser's `localStorage`.
 - **Artifact Inspector**: View rendered code diffs (unified patch), terminal logs (bash output), and generated media.
-- **AIP-160 Filter Input**: Server-side search on session lists (press **Enter** to trigger).
-- **Bulk Operations**: Multi-select sessions with "Select All" and bulk-delete with a single confirmation dialog.
-- **Custom Dialogs**: Fully themed `Alert` and `ConfirmDialog` components — no more native browser popups.
-- **Persistent Local Notes**: Per-session sticky notes saved to `localStorage`.
 - **Desktop Notifications**: Browser Notification API alerts when sessions reach `AWAITING_PLAN_APPROVAL` or `COMPLETED`.
-- **Inline Unified Diff Viewer**: Green/red syntax-highlighted patch viewer.
-- **Dynamic Branch Dropdown**: "Starting Branch" auto-populates from the selected repository's branches.
-- **Load More Pagination**: Infinite-scroll style pagination for sessions and repositories via `nextPageToken`.
-- **API Resilience**: Exponential backoff for `429 Too Many Requests` (5s → 10s → 20s → up to 60s) and global error alerts for other failures.
-- **Repository Explorer**: Browse and manage connected GitHub repositories.
-- **CLI & Integrations**: Step-by-step CLI setup, authentication guides, interactive TUI preview, and dynamic per-session pull snippets.
+- **API Resilience**: Global error handling and exponential backoff for `429 Too Many Requests` (5s → 60s).
 
-### VS Code Extension (`vscode-extension/`)
-- **Sidebar TreeView**: All sessions with state-aware icons (🚀 in-progress, ✅ completed, ⚠️ needs approval) and rich Markdown tooltips (repo, relative time, next action).
-- **Multi-Panel Webview**: Open multiple session detail panels simultaneously; state is preserved when switching tabs (`retainContextWhenHidden`).
-- **CodeLens Actions**: `🐙 Jules: Write Tests` and `🐙 Jules: Refactor` buttons appear inline above functions, methods, and classes.
-- **Context Integration**: Toggle "Include Active File" as context when creating a session; right-click a terminal error to "Send Terminal Error to Jules".
-- **Proactive Notifications**: Desktop alerts with **Approve / Apply / Open** action buttons for state transitions; batched to a single summary if 3+ sessions change at once.
-- **Auto-Apply**: Optional `jules.autoApplyAfterApproval` setting to pull changes automatically on completion, followed by an auto-focus of the Source Control view.
-- **Background Polling**: Configurable interval (default 60s); smart throttling — stops for `COMPLETED`/`FAILED`, slows to 30s for `PAUSED`/`QUEUED`.
-- **Workspace Intelligence**: Auto-detects git remotes, matches to Jules sources, and reads the current branch for session creation.
-- **Secure Storage**: API keys stored in the OS Keychain via VS Code `SecretStorage`.
-- **Status Bar**: Live session count and pending approval count.
-- **CLI Guard**: Detects if `@google/jules` CLI is installed before attempting pulls; shows install link if missing.
+### CLI & Integrations
+Bridge your web dashboard with your local terminal environment.
+- **CLI Setup Guide**: Interactive step-by-step instructions for installing and authenticating the `@google/jules` CLI.
+- **TUI Dashboard Preview**: Preview the Terminal User Interface ([TUI](file:///home/tazztone/_coding/jules-studio/src/components/CliRecipesView.jsx#L68)) for console-based management.
+- **Automation Recipes**: Pre-configured bash snippets for batch issue delegation, GitHub CLI triage, and Gemini-powered tasking.
+- **Session Pulling**: Dynamic per-session `jules remote pull` snippets for immediate local application of patches.
+
+---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-
 - **Node.js**: Version 18 or higher.
-- **Jules API Key**: Obtain your key from the Jules web app settings.
-- **Jules CLI** *(for patch apply)*:
-  ```bash
-  npm install -g @google/jules
-  ```
+- **Jules API Key**: Obtain your key from [jules.google.com/settings](https://jules.google.com/settings).
 
-### Installation
-
-1. Clone this repository:
+### Local Development
+1. **Clone & Install**:
    ```bash
    git clone https://github.com/tazztone/jules-studio.git
    cd jules-studio
-   ```
-2. Install dependencies:
-   ```bash
    npm install
    ```
+2. **Start Dev Server**:
+   ```bash
+   npm run dev
+   ```
+   The app will be available at `http://localhost:5173`.
+3. **Configure Authentication**: Navigate to the **Settings** tab and enter your API Key. The app will transition from **Demo Mode** (mock data) to **Live Mode**.
 
-### Local Development
+## 🏗 Architecture & Routing
 
-Start the development server:
-```bash
-npm run dev
-```
-The app will be available at `http://localhost:5173`. Navigate to **Settings** and enter your Jules API Key to switch from Demo Mode to Live Mode.
+Jules Studio uses **React Router v6** for client-side navigation:
 
-## 🧪 Testing
-
-Jules Studio maintains a high standard of reliability with a comprehensive automated test suite.
-
-### Run Tests
-```bash
-npm test
-```
-
-### Coverage Report
-```bash
-npm test -- --coverage --run
-```
-
-Current overall coverage: **86.78%** across 50 tests in 7 test files.
-
-| Component | Coverage |
-|---|---|
-| Core App (routing, `localStorage`) | 84.6% |
-| Sessions List | 83.3% |
-| Session Detail | 83.8% |
-| Sources Management | 96.6% |
-| Utilities / UI (Common, Sidebar, Settings) | 100% |
-
-The suite covers:
-- **Unit Tests**: API helper (`fetchJules`), `Badge`, `StateBadge`, and individual component logic.
-- **Component Tests**: Pagination, search/filter, deletion, session creation, artifact rendering, plan approval, and exponential backoff polling.
-- **Integration Tests**: React Router navigation and end-to-end routing across all views.
-
-## 🔏 Configuration & Security
-
-### API Key
-Navigate to the **Settings** tab to enter your `x-goog-api-key`. It is stored in `localStorage`. If no key is provided, the app runs in **Demo Mode** with mock data.
-
-### Vite Proxy (CORS Handling)
-API requests starting with `/v1alpha` are proxied to `https://jules.googleapis.com` via the built-in Vite proxy in `vite.config.js`, avoiding CORS issues during local development.
-
-## 🏗 Architecture
-
-### Data Flow
-```mermaid
-graph TD
-    A[User Browser] --> B(React Frontend)
-    B --> C{API Key set?}
-    C -- No --> D[Demo Mode - Mock Data]
-    C -- Yes --> E[Vite Proxy /v1alpha]
-    E --> F[Jules REST API]
-    F --> G[(GitHub Repos)]
-```
-
-**Stack:**
-- **Frontend**: React 18+ (Hooks)
-- **Routing**: React Router v6
-- **Styling**: Tailwind CSS (dark mode, glassmorphism)
-- **Icons**: Lucide React
-- **Build**: Vite
-- **Testing**: Vitest + React Testing Library + `@vitest/coverage-v8`
-
-### Directory Structure
-```text
-jules-studio/
-├── src/
-│   ├── components/          # Modular UI components
-│   │   ├── __tests__/       # Component unit tests
-│   │   ├── Common.jsx       # StateBadge, fetchJules, Alert, ConfirmDialog
-│   │   ├── SessionsList.jsx # Dashboard, creation, bulk ops
-│   │   ├── SessionDetailView.jsx  # Timeline, artifacts, DiffViewer, notes
-│   │   ├── SourcesView.jsx  # Repository management
-│   │   ├── CliRecipesView.jsx     # CLI & integrations guide
-│   │   ├── SettingsView.jsx # API key, demo mode
-│   │   └── Sidebar.jsx      # Global navigation
-│   ├── __tests__/           # App-level integration tests
-│   ├── App.jsx              # Main entry & dynamic routing
-│   ├── main.jsx             # React DOM mount
-│   └── index.css            # Tailwind directives & global styles
-├── vscode-extension/        # VS Code extension (TypeScript)
-├── .github/workflows/       # CI/CD pipelines (Actions)
-├── public/                  # Static assets
-├── vite.config.js           # Proxy & Vitest configuration
-└── package.json             # Scripts & dependencies
-```
+| Route | View | Purpose |
+|---|---|---|
+| `/sessions` | `SessionsList` | Dashboard overview, search, and bulk operations. |
+| `/sessions/:id` | `SessionDetailView` | Timeline, Artifacts, Diff Viewer, and Chat. |
+| `/sources` | `SourcesView` | Repository and branch management. |
+| `/cli` | `CliRecipesView` | CLI installation guides and automation snippets. |
+| `/settings` | `SettingsView` | API Key management and Persistance. |
 
 ## 🛡️ Security & Stability
-
-Jules Studio has undergone extensive code audits to ensure a production-ready experience:
-
-- **XSS Prevention**: Implemented strict HTML escaping and a robust Content Security Policy (CSP) for the extension Webview.
-- **Resource Management**: Resolved memory leaks in background polling and addressed potential infinite loops in React hooks.
-- **API Resilience**: Global error handling and exponential backoff (up to 60s) for rate limits ensure the UI remains responsive under load.
+- **XSS Prevention**: Strict HTML escaping and Content Security Policy (CSP).
+- **Resource Management**: Resolved memory leaks in background state polling.
+- **Vite Proxy**: API requests (`/v1alpha`) are proxied to `jules.googleapis.com` to avoid CORS issues.
 
 ## ⚙️ CI/CD & Automated Release
-
-Our development workflow is fully automated via GitHub Actions:
-
-- **Continuous Integration**: Every push triggers a suite of linting, type-checking, and unit tests (Vitest) to maintain **86%+ coverage**.
-- **Automated Releases**: Significant version tags (e.g., `v0.2.0-beta.1`) automatically trigger a build-and-publish pipeline.
-- **Open VSX Deployment**: The VS Code extension is automatically packaged and published to the [Open VSX Registry](https://open-vsx.org/).
+- **Continuous Integration**: GitHub Actions runs Vitest suites on every push (**86.78% coverage**).
+- **Automated Tags**: Creating a version tag (e.g., `v0.2.0`) triggers an automated build and publish to the [Open VSX Registry](https://open-vsx.org/) for the sibling extension.
 
 ## 📖 Evolution
+Modernized in **Phase 1** from a monolithic React prototype into a modular Vite architecture, Jules Studio now serves as the foundational core for both this web dashboard and the native VS Code extension located in `vscode-extension/`.
 
-Initially a monolithic prototype, Jules Studio was modernized in **Phase 1** to use a modular Vite + React architecture. This transition allowed for:
-- Accelerated development cycles with Hot Module Replacement (HMR).
-- Improved maintainability through component-based state management.
-- A robust foundation for the sibling VS Code extension.
-
-## 📦 Deployment
+---
 
 ```bash
 npm run build
