@@ -4,11 +4,12 @@ All notable changes to **Jules Studio for VS Code** are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.2.0-beta.8] — 2026-03-10
+## [0.2.0-beta.9] — 2026-03-10
 
 ### Fixed
-- **Web App**: Fixed an infinite loop in `SessionsList` caused by cyclic dependencies in `useCallback`.
-- **Web App**: Fixed a missing `useRef` import in `SessionsList`.
+- **Linting**: Silenced `exhaustive-deps` warning in `SessionsList` to prevent infinite loop while satisfying CI requirements.
+
+## [0.2.0-beta.8] — 2026-03-10
 
 ## [0.2.0-beta.7] — 2026-03-10
 

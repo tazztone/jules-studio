@@ -88,7 +88,8 @@ const SessionsList = ({ onSelectSession, apiKey }) => {
         } finally {
             setLoading(false);
         }
-    }, [apiKey, filter]); // removed source and nextPageToken
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [apiKey, filter]); // source and nextPageToken intentionally omitted to avoid loops
 
     useEffect(() => { loadData(); }, [loadData]);
 
