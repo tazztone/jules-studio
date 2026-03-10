@@ -1,5 +1,7 @@
 # Jules Studio for VS Code
 
+[![CI](https://github.com/tazztone/jules-studio/actions/workflows/ci.yml/badge.svg)](https://github.com/tazztone/jules-studio/actions/workflows/ci.yml)
+
 > [!IMPORTANT]
 > **Beta Preview**: This extension is currently in beta. We are actively refining the experience and appreciate your feedback.
 
