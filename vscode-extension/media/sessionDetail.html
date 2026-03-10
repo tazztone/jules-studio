@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Session Details</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-${cspNonce}';">
     <style>
         body {
             font-family: var(--vscode-font-family);
@@ -136,7 +137,7 @@
         </div>
     </div>
 
-    <script>
+    <script nonce="${cspNonce}">
         const vscode = acquireVsCodeApi();
         
         window.addEventListener('message', event => {
@@ -161,10 +162,10 @@
                 list.innerHTML = activities.map(act => `
                     <div class="activity-item">
                         <div class="activity-header">
-                            <span>${act.originator}</span>
+                            <span>${escapeHtml(act.originator)}</span>
                             <span>${new Date(act.createTime).toLocaleTimeString()}</span>
                         </div>
-                        <div class="activity-desc">${act.description}</div>
+                        <div class="activity-desc">${escapeHtml(act.description)}</div>
                         ${renderArtifacts(act.artifacts)}
                     </div>
                 `).join('');

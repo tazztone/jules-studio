@@ -1,21 +1,29 @@
 import * as vscode from 'vscode';
 import { AuthManager } from './auth/keyManager';
-import { JulesClient } from './api/julesClient';
+import { ClientManager } from './api/clientManager';
 import { SessionsTreeProvider } from './views/sessionsTreeProvider';
 import { SessionDetailPanel } from './views/sessionDetailPanel';
 import { createSessionCommand } from './commands/createSession';
 import { CliRunner } from './terminal/cliRunner';
 import { StatusBarManager } from './views/statusBar';
+import { JulesCodeLensProvider } from './codelens/julesCodeLensProvider';
 
 export async function activate(context: vscode.ExtensionContext) {
     const authManager = new AuthManager(context);
+    const clientManager = new ClientManager(authManager);
     const statusBarManager = new StatusBarManager();
-    const treeProvider = new SessionsTreeProvider(authManager, (sessions) => {
+    const treeProvider = new SessionsTreeProvider(clientManager, (sessions) => {
         statusBarManager.update(sessions);
     });
     
     // Register TreeView
     vscode.window.registerTreeDataProvider('julesSessions', treeProvider);
+
+    // Register CodeLens Provider
+    const codeLensProvider = new JulesCodeLensProvider();
+    context.subscriptions.push(
+        vscode.languages.registerCodeLensProvider({ scheme: 'file' }, codeLensProvider)
+    );
 
     // Initial context check
     const checkApiKey = async () => {
@@ -24,10 +32,19 @@ export async function activate(context: vscode.ExtensionContext) {
     };
     checkApiKey();
 
-    // Commands
     context.subscriptions.push(
         statusBarManager,
         
+        vscode.workspace.onDidChangeConfiguration(e => {
+            if (e.affectsConfiguration('jules.autoRefreshInterval')) {
+                const interval = vscode.workspace.getConfiguration('jules').get<number>('autoRefreshInterval', 60);
+                if (interval > 0) {
+                    treeProvider.startBackgroundPolling(interval * 1000);
+                } else {
+                    treeProvider.stopBackgroundPolling();
+                }
+            }
+        }),
         vscode.commands.registerCommand('jules.setupWizard', async () => {
             const step1 = '1. Get API Key';
             const step2 = '2. Configure Key';
@@ -43,23 +60,26 @@ export async function activate(context: vscode.ExtensionContext) {
             } else if (choice === step2) {
                 await vscode.commands.executeCommand('jules.setApiKey');
             } else if (choice === step3) {
-                // Verify logic: v0.2
-                await vscode.window.withProgress(
-                    { location: vscode.ProgressLocation.Notification, title: 'Verifying Jules API Key...' },
-                    async () => {
-                        const key = await authManager.getApiKey();
-                        if (!key) throw new Error('No key found. Please do Step 2 first.');
-                        const client = new JulesClient(key);
-                        await client.listSources(1); // Call a lightweight endpoint
-                    }
-                );
-                vscode.window.showInformationMessage('✅ API Key verified! You are all set.');
+                // Verify logic: v0.2 Audit Fix (Error boundary)
+                try {
+                    await vscode.window.withProgress(
+                        { location: vscode.ProgressLocation.Notification, title: 'Verifying Jules API Key...' },
+                        async () => {
+                            const client = await clientManager.getClient();
+                            await client.listSources(1); // Call a lightweight endpoint
+                        }
+                    );
+                    vscode.window.showInformationMessage('✅ API Key verified! You are all set.');
+                } catch (err: any) {
+                    vscode.window.showErrorMessage(`❌ Key verification failed: ${err.message}. Please check your key and try again.`);
+                }
             }
         }),
 
         vscode.commands.registerCommand('jules.openSession', (item) => {
-            if (item?.session) {
-                SessionDetailPanel.createOrShow(context.extensionUri, item.session, authManager);
+            const session = item?.session || (item as any);
+            if (session) {
+                SessionDetailPanel.createOrShow(context.extensionUri, session, clientManager);
             }
         }),
 
@@ -71,6 +91,7 @@ export async function activate(context: vscode.ExtensionContext) {
             });
             if (key) {
                 await authManager.setApiKey(key);
+                clientManager.reset(); // Clear old client
                 vscode.commands.executeCommand('setContext', 'jules:hasApiKey', true);
                 vscode.window.showInformationMessage('Jules API Key updated. Run "Verify & Finish" in the wizard to test it.');
                 treeProvider.refresh();
@@ -82,7 +103,7 @@ export async function activate(context: vscode.ExtensionContext) {
         }),
 
         vscode.commands.registerCommand('jules.createSession', () => {
-            createSessionCommand(authManager, () => treeProvider.refresh());
+            createSessionCommand(clientManager, () => treeProvider.refresh());
         }),
 
         vscode.commands.registerCommand('jules.createSessionWithSelection', () => {
@@ -94,11 +115,11 @@ export async function activate(context: vscode.ExtensionContext) {
                 vscode.window.showInformationMessage('No code selected.');
                 return;
             }
-            createSessionCommand(authManager, () => treeProvider.refresh(), text);
+            createSessionCommand(clientManager, () => treeProvider.refresh(), text);
         }),
 
         vscode.commands.registerCommand('jules.applyPatch', (item) => {
-            const session = item?.session || (item as any); // Handle call from webview
+            const session = item?.session || (item as any);
             if (session?.id) {
                 CliRunner.applyPatch(session);
             }
@@ -107,9 +128,7 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('jules.approvePlan', async (item) => {
             if (!item?.session) return;
             try {
-                const apiKey = await authManager.getApiKey();
-                if (!apiKey) throw new Error('API Key missing');
-                const client = new JulesClient(apiKey);
+                const client = await clientManager.getClient();
                 await client.approvePlan(item.session.id);
                 vscode.window.showInformationMessage('Plan approved.');
                 treeProvider.refresh();
@@ -127,9 +146,7 @@ export async function activate(context: vscode.ExtensionContext) {
             );
             if (confirm === 'Delete') {
                 try {
-                    const apiKey = await authManager.getApiKey();
-                    if (!apiKey) throw new Error('API Key missing');
-                    const client = new JulesClient(apiKey);
+                    const client = await clientManager.getClient();
                     await client.deleteSession(item.session.id);
                     treeProvider.refresh();
                 } catch (err: any) {
@@ -141,18 +158,60 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('jules.openInBrowser', (item) => {
             const session = item?.session || (item as any);
             if (session?.name) {
-                // Construct URL correctly: v0.2
                 const sessionId = session.name.split('/').pop();
                 const url = `https://jules.google.com/sessions/${sessionId}`;
                 vscode.env.openExternal(vscode.Uri.parse(url));
             } else if (session?.url) {
                 vscode.env.openExternal(vscode.Uri.parse(session.url));
             }
+        }),
+
+        vscode.commands.registerCommand('jules.sendTerminalToJules', async () => {
+            const errorText = await vscode.window.showInputBox({
+                prompt: 'Paste the terminal error output',
+                placeHolder: 'e.g., TypeError: Cannot read properties of undefined...',
+                value: '',
+            });
+            if (!errorText) return;
+            createSessionCommand(clientManager, () => treeProvider.refresh(), 
+                `Fix the following terminal error:\n\n\`\`\`\n${errorText}\n\`\`\``);
+        }),
+
+        vscode.commands.registerCommand('jules.codeLensAction', async (uri: vscode.Uri, symbol: any, action: string) => {
+            const doc = await vscode.workspace.openTextDocument(uri);
+            const code = doc.getText(new vscode.Range(
+                new vscode.Position(symbol.range.start.line, symbol.range.start.character),
+                new vscode.Position(symbol.range.end.line, symbol.range.end.character)
+            ));
+            
+            const prompts: Record<string, string> = {
+                test: `Write comprehensive unit tests for the following:`,
+                refactor: `Refactor the following code for better readability and maintainability:`
+            };
+
+            const initialContext = `File: ${doc.fileName}\n\`\`\`${doc.languageId}\n${code}\n\`\`\``;
+            
+            await createSessionCommand(
+                clientManager, 
+                () => treeProvider.refresh(), 
+                `${prompts[action]}\n\n${initialContext}`
+            );
         })
     );
 
     // Initial refresh
     treeProvider.refresh();
+
+    // Start background polling if enabled
+    const interval = vscode.workspace.getConfiguration('jules').get<number>('autoRefreshInterval', 60);
+    if (interval > 0) {
+        treeProvider.startBackgroundPolling(interval * 1000);
+    }
 }
 
-export function deactivate() {}
+/**
+ * Cleanup on extension deactivation: v0.2 Audit Fix
+ */
+export function deactivate() {
+    SessionDetailPanel.panels.forEach(panel => panel.dispose());
+}

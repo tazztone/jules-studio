@@ -6,7 +6,7 @@ export class StatusBarManager {
 
     constructor() {
         this.statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
-        this.statusBarItem.command = 'workbench.view.extension.jules-sidebar';
+        this.statusBarItem.command = 'workbench.view.extension.jules';
         this.statusBarItem.hide();
     }
 

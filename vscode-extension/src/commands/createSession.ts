@@ -1,22 +1,10 @@
 import * as vscode from 'vscode';
-import { AuthManager } from '../auth/keyManager';
-import { JulesClient } from '../api/julesClient';
+import { ClientManager } from '../api/clientManager';
 import { RepoDetector } from '../workspace/repoDetector';
 
-export async function createSessionCommand(authManager: AuthManager, refresh: () => void, initialContext?: string) {
+export async function createSessionCommand(clientManager: ClientManager, refresh: () => void, initialContext?: string) {
     try {
-        const apiKey = await authManager.getApiKey();
-        if (!apiKey) {
-            const setKey = 'Set API Key';
-            const choice = await vscode.window.showErrorMessage('API Key missing. Please set your Jules API key.', setKey);
-            if (choice === setKey) {
-                vscode.commands.executeCommand('jules.setApiKey');
-            }
-            return;
-        }
-
-
-        const client = new JulesClient(apiKey);
+        const client = await clientManager.getClient();
         const detector = new RepoDetector(client);
         
         // 1. Auto-detect source
@@ -38,6 +26,27 @@ export async function createSessionCommand(authManager: AuthManager, refresh: ()
 
         if (!sourceName) return;
 
+        // 1b. Include Active File?
+        const activeEditor = vscode.window.activeTextEditor;
+        let fileContext = '';
+        if (activeEditor) {
+            const includeFile = await vscode.window.showQuickPick(
+                [
+                    { label: '$(file) Include Active File', detail: activeEditor.document.fileName, picked: true },
+                    { label: '$(x) Skip', detail: 'Don\'t include file context' }
+                ],
+                { placeHolder: 'Include the currently open file as context?' }
+            );
+            if (includeFile?.label.includes('Include')) {
+                const doc = activeEditor.document;
+                // Basic truncation for safety
+                const text = doc.getText();
+                const lines = text.split('\n');
+                const truncatedText = lines.length > 500 ? lines.slice(0, 500).join('\n') + '\n... (truncated)' : text;
+                fileContext = `\n\nFile: ${doc.fileName}\n\`\`\`${doc.languageId}\n${truncatedText}\n\`\`\``;
+            }
+        }
+
         // 2. Prompt
         const prompt = await vscode.window.showInputBox({
             prompt: initialContext ? 'What should Jules do with this code?' : 'What should Jules do?',
@@ -45,7 +54,8 @@ export async function createSessionCommand(authManager: AuthManager, refresh: ()
         });
         if (!prompt) return;
 
-        const finalPrompt = initialContext ? `${prompt}\n\nCode Context:\n\`\`\`\n${initialContext}\n\`\`\`` : prompt;
+        const combinedContext = [initialContext, fileContext].filter(Boolean).join('\n\n');
+        const finalPrompt = combinedContext ? `${prompt}\n\nCode Context:\n${combinedContext}` : prompt;
 
         // 3. Optional Title
         const title = await vscode.window.showInputBox({
@@ -63,10 +73,15 @@ export async function createSessionCommand(authManager: AuthManager, refresh: ()
         );
         if (!modeChoice) return;
 
-        // 5. Create Session
+        // 5. Detect current branch: v0.2 Audit Fix
+        const gitExt = vscode.extensions.getExtension('vscode.git')?.exports;
+        const api = gitExt?.getAPI(1);
+        const repo = api?.repositories[0];
+        const currentBranch = repo?.state?.HEAD?.name || 'main';
+
         const sourceContext = {
             source: sourceName,
-            githubRepoContext: { startingBranch: 'main' } // Default to main for now
+            githubRepoContext: { startingBranch: currentBranch }
         };
 
         const session = await vscode.window.withProgress(
@@ -89,6 +104,9 @@ export async function createSessionCommand(authManager: AuthManager, refresh: ()
         vscode.commands.executeCommand('jules.openSession', { session });
 
     } catch (err: any) {
+        if (err.message.includes('API Key missing')) {
+            return; // KeyManager already shows error message
+        }
         vscode.window.showErrorMessage(`Failed to create session: ${err.message}`);
     }
 }

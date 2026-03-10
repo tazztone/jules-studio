@@ -1,6 +1,9 @@
 import * as vscode from 'vscode';
 import { Session } from '../api/types';
-import { execSync } from 'child_process';
+import { execFile } from 'child_process';
+import { promisify } from 'util';
+
+const execFileAsync = promisify(execFile);
 
 export class CliRunner {
     private static terminal: vscode.Terminal | undefined;
@@ -25,15 +28,20 @@ export class CliRunner {
         }
         
         this.terminal.show();
-        this.terminal.sendText(`jules remote pull --session ${session.id}`);
+        this.terminal.sendText(`jules remote pull --session ${session.id} --apply`);
         
         vscode.window.showInformationMessage(`Applying patch for session "${session.title || session.id}"...`);
+
+        // Focus SCM after a short delay to let the pull complete
+        setTimeout(() => {
+            vscode.commands.executeCommand('workbench.view.scm');
+        }, 5000);
     }
 
     static async checkCliInstalled(): Promise<boolean> {
         try {
-            // v0.2: Real check
-            execSync('jules --version', { stdio: 'ignore' });
+            // v0.2: Real check (async)
+            await execFileAsync('jules', ['--version']);
             return true;
         } catch (e) {
             return false;

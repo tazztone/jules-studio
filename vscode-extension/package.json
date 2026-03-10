@@ -67,14 +67,8 @@
         "icon": "$(check)"
       },
       {
-        "command": "jules.sendMessage",
-        "title": "Jules: Send Message",
-        "category": "Jules",
-        "icon": "$(mail)"
-      },
-      {
         "command": "jules.applyPatch",
-        "title": "Jules: Pull & Apply Changes to Local Files",
+        "title": "Pull & Apply Changes to Local Files",
         "category": "Jules",
         "icon": "$(cloud-download)"
       },
@@ -93,6 +87,17 @@
       {
         "command": "jules.createSessionWithSelection",
         "title": "Jules: New Session with Selection",
+        "category": "Jules"
+      },
+      {
+        "command": "jules.sendTerminalToJules",
+        "title": "Jules: Send Terminal Error to Jules",
+        "category": "Jules",
+        "icon": "$(terminal)"
+      },
+      {
+        "command": "jules.codeLensAction",
+        "title": "Jules: CodeLens Action",
         "category": "Jules"
       }
     ],
@@ -126,7 +131,7 @@
       "view/item/context": [
         {
           "command": "jules.approvePlan",
-          "when": "view == julesSessions && viewItem == state-awaiting-approval",
+          "when": "view == julesSessions && viewItem == state-awaiting-plan-approval",
           "group": "inline"
         },
         {
@@ -144,7 +149,35 @@
           "when": "view == julesSessions",
           "group": "navigation"
         }
+      ],
+      "terminal/context": [
+        {
+          "command": "jules.sendTerminalToJules",
+          "group": "navigation",
+          "when": "jules:hasApiKey"
+        }
       ]
+    }
+  },
+  "configuration": {
+    "title": "Jules Studio",
+    "properties": {
+      "jules.codeLens.enabled": {
+        "type": "boolean",
+        "default": true,
+        "description": "Show Jules CodeLens actions above functions and classes."
+      },
+      "jules.autoRefreshInterval": {
+        "type": "number",
+        "default": 60,
+        "minimum": 0,
+        "description": "Auto-refresh interval in seconds (0 to disable). Enables proactive notifications."
+      },
+      "jules.autoApplyAfterApproval": {
+        "type": "boolean",
+        "default": false,
+        "description": "Automatically pull and apply changes when a session completes."
+      }
     }
   },
   "scripts": {
@@ -157,14 +190,13 @@
   },
   "devDependencies": {
     "@types/vscode": "^1.85.0",
-    "@types/glob": "^8.1.0",
     "@types/mocha": "^10.0.6",
     "@types/node": "18.x",
     "@typescript-eslint/eslint-plugin": "^6.15.0",
     "@typescript-eslint/parser": "^6.15.0",
     "eslint": "^8.56.0",
-    "glob": "^10.3.10",
     "mocha": "^10.2.0",
+    "glob": "^10.3.10",
     "typescript": "^5.3.3",
     "@vscode/test-electron": "^2.3.8"
   }
