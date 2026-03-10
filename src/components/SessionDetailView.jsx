@@ -4,7 +4,7 @@ import {
     MessageSquare, FileCode2, RefreshCw, Terminal, 
     Loader2, Play, Check, Code, Trash2, HelpCircle, StickyNote
 } from 'lucide-react';
-import { StateBadge, fetchJules, Alert, ConfirmDialog, parseSessionId, parseRepoName } from './Common';
+import { StateBadge, fetchJules, Alert, ConfirmDialog, parseSessionId } from './Common';
 
 const MOCK_ACTIVITIES = [
     {
@@ -93,7 +93,7 @@ const SessionDetailView = ({ session, onBack, apiKey }) => {
         localStorage.setItem(`jules_notes_${session.name}`, val);
     };
 
-    const checkNotifications = (newState) => {
+    const checkNotifications = React.useCallback((newState) => {
         if (newState === lastNotifiedState.current) return;
         
         if (["AWAITING_PLAN_APPROVAL", "COMPLETED"].includes(newState) && Notification.permission === "granted") {
@@ -103,9 +103,9 @@ const SessionDetailView = ({ session, onBack, apiKey }) => {
             });
         }
         lastNotifiedState.current = newState;
-    };
+    }, [session.title]);
 
-    const loadActivities = async () => {
+    const loadActivities = React.useCallback(async () => {
         if (!apiKey) {
             setActivities(MOCK_ACTIVITIES);
             setLoading(false);
@@ -140,20 +140,24 @@ const SessionDetailView = ({ session, onBack, apiKey }) => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [apiKey, session.name, checkNotifications, resetPolling]); 
 
-    const resetPolling = () => {
+    const resetPolling = React.useCallback(() => {
         if (pollInterval.current) clearInterval(pollInterval.current);
         if (['QUEUED', 'PLANNING', 'IN_PROGRESS'].includes(sessionState)) {
             pollInterval.current = setInterval(loadActivities, pollTime.current);
         }
-    };
+    }, [sessionState, loadActivities]);
 
     useEffect(() => {
         loadActivities();
         resetPolling();
-        return () => clearInterval(pollInterval.current);
-    }, [apiKey, session.name, sessionState]);
+        return () => {
+            if (pollInterval.current) {
+                clearInterval(pollInterval.current);
+            }
+        };
+    }, [loadActivities, resetPolling]);
 
     const handleApprovePlan = async () => {
         setActionLoading(true);
@@ -405,7 +409,7 @@ const SessionDetailView = ({ session, onBack, apiKey }) => {
                                             <Code size={48} />
                                         </div>
                                         <pre className="text-[11px] font-mono text-blue-200/80 leading-relaxed overflow-x-auto whitespace-pre">
-                                            # Session: "{session.title}"<br/>
+                                            # Session: &quot;{session.title}&quot;<br/>
                                             jules remote pull --session {parseSessionId(session.name)}
                                         </pre>
                                     </div>

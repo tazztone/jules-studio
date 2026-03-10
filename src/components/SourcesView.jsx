@@ -14,7 +14,7 @@ const SourcesView = ({ apiKey }) => {
     const [error, setError] = useState('');
     const [nextPageToken, setNextPageToken] = useState('');
 
-    const loadSources = async (isLoadMore = false) => {
+    const loadSources = React.useCallback(async (isLoadMore = false) => {
         if (!apiKey) {
             setSources(MOCK_SOURCES);
             setLoading(false);
@@ -36,11 +36,11 @@ const SourcesView = ({ apiKey }) => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [apiKey, nextPageToken]);
 
     useEffect(() => {
         loadSources();
-    }, [apiKey]);
+    }, [loadSources]);
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">

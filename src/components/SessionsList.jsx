@@ -50,7 +50,7 @@ const SessionsList = ({ onSelectSession, apiKey }) => {
     const [createLoading, setCreateLoading] = useState(false);
     const [deleteLoading, setDeleteLoading] = useState(null);
 
-    const loadData = async (isLoadMore = false) => {
+    const loadData = React.useCallback(async (isLoadMore = false) => {
         if (!apiKey) {
             if (!isLoadMore) {
                 setSessions(MOCK_SESSIONS);
@@ -84,9 +84,9 @@ const SessionsList = ({ onSelectSession, apiKey }) => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [apiKey, filter, nextPageToken, source]);
 
-    useEffect(() => { loadData(); }, [apiKey]);
+    useEffect(() => { loadData(); }, [loadData]);
 
     const handleDeleteSession = async (sessionName) => {
         setDeleteLoading(sessionName);

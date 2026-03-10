@@ -1,3 +1,5 @@
+/* eslint-disable react-refresh/only-export-components */
+import React from 'react';
 import { X, AlertCircle } from 'lucide-react';
 
 export const Badge = ({ children, color = 'blue' }) => {
@@ -113,7 +115,9 @@ export const fetchJules = async (path, method = 'GET', body = null, apiKey, quer
         try {
             const errJson = JSON.parse(errText);
             errText = errJson.error?.message || errText;
-        } catch (e) {}
+        } catch {
+            // ignore parse errors
+        }
         throw new Error(`API Error (${response.status}): ${errText}`);
     }
 
