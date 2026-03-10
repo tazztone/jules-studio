@@ -2,7 +2,7 @@
   "name": "jules-vscode",
   "displayName": "Jules Studio",
   "description": "Manage Google Jules AI coding sessions directly from VS Code — session sidebar, plan approval, inline diffs, CodeLens actions, and proactive notifications.",
-  "version": "0.2.0-beta.5",
+  "version": "0.2.0-beta.6",
   "preview": true,
   "publisher": "tazztone",
   "icon": "media/jules-icon-128.png",

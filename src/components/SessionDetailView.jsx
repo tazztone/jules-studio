@@ -77,7 +77,6 @@ const SessionDetailView = ({ session, onBack, apiKey }) => {
     const [alertMsg, setAlertMsg] = useState('');
     const [notes, setNotes] = useState(() => localStorage.getItem(`jules_notes_${session.name}`) || '');
 
-    const pollInterval = useRef(null);
     const pollTime = useRef(5000);
     const retryCount = useRef(0);
     const lastNotifiedState = useRef(session.state);
