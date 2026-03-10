@@ -1,13 +1,30 @@
 {
   "name": "jules-vscode",
   "displayName": "Jules Studio",
-  "description": "Jules Studio integration for VS Code",
+  "description": "Manage Google Jules AI coding sessions directly from VS Code — session sidebar, plan approval, inline diffs, CodeLens actions, and proactive notifications.",
   "version": "0.1.0",
   "publisher": "tazztone",
+  "icon": "media/jules-icon-128.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tazztone/jules-studio"
+  },
+  "homepage": "https://github.com/tazztone/jules-studio",
+  "bugs": {
+    "url": "https://github.com/tazztone/jules-studio/issues"
+  },
+  "license": "MIT",
+  "keywords": ["jules", "AI", "coding agent", "google", "automation", "deepmind"],
+  "galleryBanner": {
+    "color": "#1e1e2e",
+    "theme": "dark"
+  },
   "engines": {
     "vscode": "^1.85.0"
   },
   "categories": [
+    "AI",
+    "Programming Languages",
     "Other"
   ],
   "activationEvents": [],
