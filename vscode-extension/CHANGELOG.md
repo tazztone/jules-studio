@@ -4,16 +4,13 @@ All notable changes to **Jules Studio for VS Code** are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.2.0-beta.4] — 2026-03-10
-
-### Added
-- **CI/CD Automation**: Finalized CI/CD automation.
+## [0.2.0-beta.5] — 2026-03-10
 
 ### Fixed
-- **Linting**: Resolved all ESLint errors in both extension and web-app (70+ fixes).
+- **Runtime**: Fixed a `ReferenceError` in `SessionDetailView` where polling functions were accessed before initialization.
+- **Polling**: Refactored polling logic for better stability and exponential backoff.
 
-### Improved
-- **Linting**: Isolated monorepo linting to avoid OOM errors.
+## [0.2.0-beta.4] — 2026-03-10
 
 ## [0.2.0-beta.3] — 2026-03-10
 

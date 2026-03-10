@@ -125,7 +125,6 @@ const SessionDetailView = ({ session, onBack, apiKey }) => {
             if (retryCount.current > 0) {
                 retryCount.current = 0;
                 pollTime.current = 5000;
-                resetPolling();
             }
         } catch (err) {
             console.error("Error polling activities:", err);
@@ -133,31 +132,28 @@ const SessionDetailView = ({ session, onBack, apiKey }) => {
                 // Rate limited: Exponential backoff
                 retryCount.current += 1;
                 pollTime.current = Math.min(60000, pollTime.current * 2);
-                resetPolling();
             } else {
                 setAlertMsg(`Failed to load activities: ${err.message}`);
             }
         } finally {
             setLoading(false);
         }
-    }, [apiKey, session.name, checkNotifications, resetPolling]); 
-
-    const resetPolling = React.useCallback(() => {
-        if (pollInterval.current) clearInterval(pollInterval.current);
-        if (['QUEUED', 'PLANNING', 'IN_PROGRESS'].includes(sessionState)) {
-            pollInterval.current = setInterval(loadActivities, pollTime.current);
-        }
-    }, [sessionState, loadActivities]);
+    }, [apiKey, session.name, checkNotifications]); 
 
     useEffect(() => {
-        loadActivities();
-        resetPolling();
-        return () => {
-            if (pollInterval.current) {
-                clearInterval(pollInterval.current);
+        let timer;
+        const poll = async () => {
+            await loadActivities();
+            if (['QUEUED', 'PLANNING', 'IN_PROGRESS'].includes(sessionState)) {
+                timer = setTimeout(poll, pollTime.current);
             }
         };
-    }, [loadActivities, resetPolling]);
+
+        poll();
+        return () => {
+            if (timer) clearTimeout(timer);
+        };
+    }, [loadActivities, sessionState]);
 
     const handleApprovePlan = async () => {
         setActionLoading(true);
