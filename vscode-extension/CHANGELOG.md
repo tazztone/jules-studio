@@ -4,6 +4,11 @@ All notable changes to **Jules Studio for VS Code** are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0-beta.3] — 2026-03-10
+
+### Fixed
+- **CI Linting**: Resolved 27 ESLint warnings (naming conventions, missing braces) to satisfy strict CI checks.
+
 ## [0.2.0-beta.2] — 2026-03-10
 
 ### Added

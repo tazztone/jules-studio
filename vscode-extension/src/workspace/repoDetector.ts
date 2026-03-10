@@ -6,18 +6,26 @@ export class RepoDetector {
 
     async getMatchingSource(): Promise<string | undefined> {
         const gitExtension = vscode.extensions.getExtension('vscode.git')?.exports;
-        if (!gitExtension) return undefined;
+        if (!gitExtension) {
+            return undefined;
+        }
 
         const api = gitExtension.getAPI(1);
         const repo = api.repositories[0];
-        if (!repo) return undefined;
+        if (!repo) {
+            return undefined;
+        }
 
         const remotes = repo.state.remotes;
         const origin = remotes.find((r: any) => r.name === 'origin') || remotes[0];
-        if (!origin || !origin.fetchUrl) return undefined;
+        if (!origin || !origin.fetchUrl) {
+            return undefined;
+        }
 
         const repoPath = this.parseRemoteUrl(origin.fetchUrl);
-        if (!repoPath) return undefined;
+        if (!repoPath) {
+            return undefined;
+        }
 
         try {
             const { sources } = await this.client.listSources();

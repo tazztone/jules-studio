@@ -28,7 +28,9 @@ export class CliRunner {
             { modal: true },
             'Apply Changes'
         );
-        if (confirm !== 'Apply Changes') return;
+        if (confirm !== 'Apply Changes') {
+            return;
+        }
 
         if (!this.terminal || this.terminal.exitStatus !== undefined) {
             this.terminal = vscode.window.createTerminal('Jules CLI');

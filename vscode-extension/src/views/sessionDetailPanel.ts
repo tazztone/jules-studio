@@ -157,9 +157,11 @@ export class SessionDetailPanel {
             clearTimeout(this._pollTimeout);
         }
         this._panel.dispose();
-        while (this._disposables.length) {
+        while (this._disposables.length > 0) {
             const x = this._disposables.pop();
-            if (x) x.dispose();
+            if (x) {
+                x.dispose();
+            }
         }
     }
 }

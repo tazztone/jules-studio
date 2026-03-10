@@ -19,11 +19,13 @@ export class JulesClient {
             }
         });
 
-        const headers = {
-            'x-goog-api-key': this.apiKey,
-            ...(options.body && { 'Content-Type': 'application/json' }),
-            ...(options.headers || {})
+        const headers: Record<string, string> = {
+            ...(options.headers as Record<string, string> || {})
         };
+        headers['x-goog-api-key'] = this.apiKey;
+        if (options.body) {
+            headers['Content-Type'] = 'application/json';
+        }
 
         const executeRequest = async (attempt: number = 0): Promise<T> => {
             const response = await fetch(url.toString(), { ...options, headers });

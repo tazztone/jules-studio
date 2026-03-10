@@ -52,7 +52,9 @@ export class SessionsTreeProvider implements vscode.TreeDataProvider<vscode.Tree
     }
 
     async getChildren(element?: vscode.TreeItem): Promise<vscode.TreeItem[]> {
-        if (element) return [];
+        if (element) {
+            return [];
+        }
 
         try {
             const client = await this.clientManager.getClient();
@@ -202,15 +204,22 @@ export class SessionTreeItem extends vscode.TreeItem {
 
     private getTimeAgo(date: Date): string {
         const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
-        if (seconds < 60) return 'just now';
+        if (seconds < 60) {
+            return 'just now';
+        }
         const minutes = Math.floor(seconds / 60);
-        if (minutes < 60) return `${minutes}m ago`;
+        if (minutes < 60) {
+            return `${minutes}m ago`;
+        }
         const hours = Math.floor(minutes / 60);
-        if (hours < 24) return `${hours}h ago`;
+        if (hours < 24) {
+            return `${hours}h ago`;
+        }
         return date.toLocaleDateString();
     }
 
     private getStateLabel(state: string): string {
+        /* eslint-disable @typescript-eslint/naming-convention */
         const labels: Record<string, string> = {
             'QUEUED': 'Queued',
             'PLANNING': 'Planning',
@@ -221,10 +230,12 @@ export class SessionTreeItem extends vscode.TreeItem {
             'COMPLETED': 'Completed',
             'FAILED': 'Failed'
         };
+        /* eslint-enable @typescript-eslint/naming-convention */
         return labels[state] || state;
     }
 
     private getStateIcon(state: string): vscode.ThemeIcon {
+        /* eslint-disable @typescript-eslint/naming-convention */
         const icons: Record<string, string> = {
             'QUEUED': 'watch',
             'PLANNING': 'sync~spin',
@@ -235,6 +246,7 @@ export class SessionTreeItem extends vscode.TreeItem {
             'COMPLETED': 'check',
             'FAILED': 'error'
         };
+        /* eslint-enable @typescript-eslint/naming-convention */
         return new vscode.ThemeIcon(icons[state] || 'question');
     }
 }

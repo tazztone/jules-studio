@@ -18,13 +18,17 @@ export async function createSessionCommand(clientManager: ClientManager, refresh
                         sources.sources.map(s => ({ label: s.githubRepo ? `${s.githubRepo.owner}/${s.githubRepo.repo}` : s.id, name: s.name })),
                         { placeHolder: 'Select a Jules Source (Repository)' }
                     );
-                    if (selected) name = selected.name;
+                    if (selected) {
+                        name = selected.name;
+                    }
                 }
                 return name;
             }
         );
 
-        if (!sourceName) return;
+        if (!sourceName) {
+            return;
+        }
 
         // 1b. Include Active File?
         const activeEditor = vscode.window.activeTextEditor;
@@ -52,7 +56,9 @@ export async function createSessionCommand(clientManager: ClientManager, refresh
             prompt: initialContext ? 'What should Jules do with this code?' : 'What should Jules do?',
             placeHolder: 'e.g., Fix the bug in auth middleware, Add unit tests for utils.js'
         });
-        if (!prompt) return;
+        if (!prompt) {
+            return;
+        }
 
         const combinedContext = [initialContext, fileContext].filter(Boolean).join('\n\n');
         const finalPrompt = combinedContext ? `${prompt}\n\nCode Context:\n${combinedContext}` : prompt;
@@ -71,7 +77,9 @@ export async function createSessionCommand(clientManager: ClientManager, refresh
             ],
             { placeHolder: 'Select Automation Mode' }
         );
-        if (!modeChoice) return;
+        if (!modeChoice) {
+            return;
+        }
 
         // 5. Detect current branch: v0.2 Audit Fix
         const gitExt = vscode.extensions.getExtension('vscode.git')?.exports;

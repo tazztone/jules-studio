@@ -110,7 +110,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
         vscode.commands.registerCommand('jules.createSessionWithSelection', () => {
             const editor = vscode.window.activeTextEditor;
-            if (!editor) return;
+            if (!editor) {
+                return;
+            }
             const selection = editor.selection;
             const text = editor.document.getText(selection);
             if (!text) {
@@ -128,7 +130,9 @@ export async function activate(context: vscode.ExtensionContext) {
         }),
 
         vscode.commands.registerCommand('jules.approvePlan', async (item) => {
-            if (!item?.session) return;
+            if (!item?.session) {
+                return;
+            }
             try {
                 const client = await clientManager.getClient();
                 await client.approvePlan(item.session.id);
@@ -140,7 +144,9 @@ export async function activate(context: vscode.ExtensionContext) {
         }),
 
         vscode.commands.registerCommand('jules.deleteSession', async (item) => {
-            if (!item?.session) return;
+            if (!item?.session) {
+                return;
+            }
             const confirm = await vscode.window.showWarningMessage(
                 `Are you sure you want to delete session "${item.session.title || item.session.id}"?`,
                 { modal: true },
