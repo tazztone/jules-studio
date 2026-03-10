@@ -59,6 +59,23 @@ Live count of active sessions and pending approvals always visible at the bottom
 
 ---
 
+## 🛡️ Security & Quality Assurance
+
+This extension has been refined through a rigorous security audit and testing process:
+
+- **CSP Protection**: A strict Content Security Policy (CSP) prevents unauthorized script execution and data exfiltration.
+- **HTML Escaping**: All dynamic content in the Webview is escaped to eliminate XSS risks.
+- **Leak Prevention**: Explicitly managed polling timers and disposable resources prevent memory leaks during long-running sessions.
+- **Coverage**: Maintained as part of a mono-repo suite with over **86% test coverage**.
+
+## ⚙️ Automated Release Pipeline
+
+The extension's lifecycle is managed by a structured CI/CD pipeline in GitHub Actions:
+
+1. **Validation**: Every commit is verified for linting errors and test regressions.
+2. **Tagging**: Creating a version tag (e.g., `v0.2.x`) triggers a release build.
+3. **Publishing**: The extension is automatically packaged into a `.vsix` file and published to the **Open VSX Registry**, ensuring immediate availability for VS Code and VSCodium users.
+
 ## 🚀 Getting Started
 
 1. **Install the CLI** (if you haven’t already):

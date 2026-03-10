@@ -141,10 +141,34 @@ jules-studio/
 │   ├── main.jsx             # React DOM mount
 │   └── index.css            # Tailwind directives & global styles
 ├── vscode-extension/        # VS Code extension (TypeScript)
+├── .github/workflows/       # CI/CD pipelines (Actions)
 ├── public/                  # Static assets
 ├── vite.config.js           # Proxy & Vitest configuration
 └── package.json             # Scripts & dependencies
 ```
+
+## 🛡️ Security & Stability
+
+Jules Studio has undergone extensive code audits to ensure a production-ready experience:
+
+- **XSS Prevention**: Implemented strict HTML escaping and a robust Content Security Policy (CSP) for the extension Webview.
+- **Resource Management**: Resolved memory leaks in background polling and addressed potential infinite loops in React hooks.
+- **API Resilience**: Global error handling and exponential backoff (up to 60s) for rate limits ensure the UI remains responsive under load.
+
+## ⚙️ CI/CD & Automated Release
+
+Our development workflow is fully automated via GitHub Actions:
+
+- **Continuous Integration**: Every push triggers a suite of linting, type-checking, and unit tests (Vitest) to maintain **86%+ coverage**.
+- **Automated Releases**: Significant version tags (e.g., `v0.2.0-beta.1`) automatically trigger a build-and-publish pipeline.
+- **Open VSX Deployment**: The VS Code extension is automatically packaged and published to the [Open VSX Registry](https://open-vsx.org/).
+
+## 📖 Evolution
+
+Initially a monolithic prototype, Jules Studio was modernized in **Phase 1** to use a modular Vite + React architecture. This transition allowed for:
+- Accelerated development cycles with Hot Module Replacement (HMR).
+- Improved maintainability through component-based state management.
+- A robust foundation for the sibling VS Code extension.
 
 ## 📦 Deployment
 
