@@ -178,6 +178,9 @@ export async function activate(context: vscode.ExtensionContext) {
         }),
 
         vscode.commands.registerCommand('jules.codeLensAction', async (uri: vscode.Uri, symbol: any, action: string) => {
+            if (!symbol?.range) {
+                return;
+            }
             const doc = await vscode.workspace.openTextDocument(uri);
             const code = doc.getText(new vscode.Range(
                 new vscode.Position(symbol.range.start.line, symbol.range.start.character),

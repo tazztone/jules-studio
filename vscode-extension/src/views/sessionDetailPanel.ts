@@ -91,7 +91,7 @@ export class SessionDetailPanel {
         }
     }
 
-    private async _update() {
+    private async _update(): Promise<Session | undefined> {
         try {
             const client = await this.clientManager.getClient();
             const freshSession = await client.getSession(this._session.id);
@@ -105,8 +105,10 @@ export class SessionDetailPanel {
                 session: freshSession,
                 activities: activities
             });
+            return freshSession;
         } catch (err) {
             console.error('Error updating webview:', err);
+            return undefined;
         }
     }
 
@@ -117,13 +119,12 @@ export class SessionDetailPanel {
             const terminalStates = ['COMPLETED', 'FAILED'];
             const idleStates = ['PAUSED', 'QUEUED'];
 
-            if (terminalStates.includes(this._session.state)) {
+            const freshSession = await this._update();
+            if (!freshSession || terminalStates.includes(freshSession.state)) {
                 return; // Stop polling
             }
 
-            await this._update();
-
-            const delay = idleStates.includes(this._session.state) ? 30000 : 10000;
+            const delay = idleStates.includes(freshSession.state) ? 30000 : 10000;
             this._pollTimeout = setTimeout(poll, delay);
         };
 

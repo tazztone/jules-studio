@@ -1,5 +1,5 @@
 import * as path from 'path';
-import Mocha from 'mocha';
+import { glob } from 'glob';
 
 export function run(): Promise<void> {
     // Create the mocha test
@@ -11,10 +11,7 @@ export function run(): Promise<void> {
     const testsRoot = path.resolve(__dirname, '..');
 
     return new Promise((c, e) => {
-        const testFiles = [
-            'suite/clientManager.test.js',
-            'suite/julesClient.test.js'
-        ];
+        const testFiles = glob.sync('suite/**/*.test.js', { cwd: testsRoot });
 
         testFiles.forEach(f => mocha.addFile(path.resolve(testsRoot, f)));
 

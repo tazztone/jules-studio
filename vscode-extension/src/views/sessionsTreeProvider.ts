@@ -79,12 +79,19 @@ export class SessionsTreeProvider implements vscode.TreeDataProvider<vscode.Tree
     }
 
     private handleStateChanges(sessions: Session[]) {
+        const changes: Session[] = [];
         for (const session of sessions) {
             const prevState = this._previousStates.get(session.id);
             if (prevState && prevState !== session.state) {
-                this.notifyStateChange(session);
+                changes.push(session);
             }
             this._previousStates.set(session.id, session.state);
+        }
+
+        if (changes.length > 3) {
+            vscode.window.showInformationMessage(`🐙 Jules: ${changes.length} sessions have state updates.`);
+        } else {
+            changes.forEach(s => this.notifyStateChange(s));
         }
     }
 
