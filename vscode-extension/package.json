@@ -57,12 +57,25 @@
         }
       ]
     },
+    "keybindings": [
+      {
+        "command": "jules.createSession",
+        "key": "ctrl+shift+j",
+        "mac": "cmd+shift+j"
+      }
+    ],
     "commands": [
       {
         "command": "jules.setupWizard",
         "title": "Jules: Setup Wizard",
         "category": "Jules",
         "icon": "$(gear)"
+      },
+      {
+        "command": "jules.openSettings",
+        "title": "Jules: Open Settings",
+        "category": "Jules",
+        "icon": "$(settings-gear)"
       },
       {
         "command": "jules.setApiKey",
@@ -121,6 +134,12 @@
         "icon": "$(globe)"
       },
       {
+        "command": "jules.searchSessions",
+        "title": "Jules: Search Sessions",
+        "category": "Jules",
+        "icon": "$(search)"
+      },
+      {
         "command": "jules.createSessionWithSelection",
         "title": "Jules: New Session with Selection",
         "category": "Jules"
@@ -152,9 +171,25 @@
           "when": "editorHasSelection"
         }
       ],
+      "explorer/context": [
+        {
+          "command": "jules.createSessionWithSelection",
+          "group": "navigation"
+        }
+      ],
       "view/title": [
         {
           "command": "jules.filterByRepo",
+          "when": "view == julesSessions",
+          "group": "navigation"
+        },
+        {
+          "command": "jules.openSettings",
+          "when": "view == julesSessions",
+          "group": "navigation"
+        },
+        {
+          "command": "jules.searchSessions",
           "when": "view == julesSessions",
           "group": "navigation"
         },
@@ -217,6 +252,18 @@
           "type": "boolean",
           "default": false,
           "description": "Automatically stage, commit to a new branch (wip-jules-YYYY...), and push before creating a Jules session."
+        },
+        "jules.autoDetectRepo": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically detect and filter sessions by the current workspace repository on startup."
+        },
+        "jules.pageSize": {
+          "type": "number",
+          "default": 10,
+          "minimum": 1,
+          "maximum": 50,
+          "description": "The number of sessions to load per page."
         }
       }
     }

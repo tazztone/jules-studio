@@ -109,10 +109,12 @@ export class SessionsTreeProvider implements vscode.TreeDataProvider<vscode.Tree
                 this._nextPageToken = undefined;
             }
 
+            const pageSize = vscode.workspace.getConfiguration('jules').get<number>('pageSize', 10);
+
             if (isBackground && this._sessions.length > 0) {
                 // On background poll, only fetch the first page to get state updates
                 // and don't reset _nextPageToken so load more still works later
-                const { sessions = [] } = await client.listSessions(50, undefined);
+                const { sessions = [] } = await client.listSessions(pageSize, undefined);
 
                 // Merge updates into existing sessions to preserve pagination
                 const sessionMap = new Map(this._sessions.map(s => [s.id, s]));
@@ -129,7 +131,7 @@ export class SessionsTreeProvider implements vscode.TreeDataProvider<vscode.Tree
                 ];
 
             } else {
-                const { sessions = [], nextPageToken } = await client.listSessions(50, this._nextPageToken);
+                const { sessions = [], nextPageToken } = await client.listSessions(pageSize, this._nextPageToken);
 
                 if (isLoadMore && this._nextPageToken) {
                     // Append unique sessions

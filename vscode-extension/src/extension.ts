@@ -8,6 +8,8 @@ import { createSessionCommand } from './commands/createSession';
 import { CliRunner } from './terminal/cliRunner';
 import { StatusBarManager } from './views/statusBar';
 import { JulesCodeLensProvider } from './codelens/julesCodeLensProvider';
+import { RepoDetector } from './workspace/repoDetector';
+import { SettingsPanel } from './views/settingsPanel';
 
 let treeProvider: SessionsTreeProvider;
 let sessionsTreeView: vscode.TreeView<vscode.TreeItem>;
@@ -118,6 +120,10 @@ export async function activate(context: vscode.ExtensionContext) {
             }
         }),
 
+        vscode.commands.registerCommand('jules.openSettings', () => {
+            SettingsPanel.createOrShow(authManager, () => treeProvider.refresh());
+        }),
+
         vscode.commands.registerCommand('jules.openSession', (item) => {
             const session = item?.session || (item as any);
             if (session) {
@@ -145,6 +151,31 @@ export async function activate(context: vscode.ExtensionContext) {
             treeProvider.refresh();
         }),
 
+        vscode.commands.registerCommand('jules.searchSessions', async () => {
+            const sessions = treeProvider.getLoadedSessions();
+            if (!sessions || sessions.length === 0) {
+                vscode.window.showInformationMessage('No sessions loaded to search.');
+                return;
+            }
+
+            const items = sessions.map(s => ({
+                label: s.title || s.id,
+                description: s.sourceContext?.source || '',
+                detail: s.prompt?.slice(0, 100),
+                session: s
+            }));
+
+            const selected = await vscode.window.showQuickPick(items, {
+                placeHolder: 'Search Jules sessions by title, prompt, or repo...',
+                matchOnDescription: true,
+                matchOnDetail: true
+            });
+
+            if (selected) {
+                vscode.commands.executeCommand('jules.openSession', { session: selected.session });
+            }
+        }),
+
         vscode.commands.registerCommand('jules.loadMoreSessions', () => {
             treeProvider.refresh({ mode: 'loadMore' });
         }),
@@ -153,18 +184,39 @@ export async function activate(context: vscode.ExtensionContext) {
             createSessionCommand(clientManager, () => treeProvider.refresh());
         }),
 
-        vscode.commands.registerCommand('jules.createSessionWithSelection', () => {
-            const editor = vscode.window.activeTextEditor;
-            if (!editor) {
-                return;
+        vscode.commands.registerCommand('jules.createSessionWithSelection', async (uri?: vscode.Uri) => {
+            let initialContext = '';
+
+            if (uri) {
+                // Invoked from explorer context menu
+                const stat = await vscode.workspace.fs.stat(uri);
+                if (stat.type === vscode.FileType.Directory) {
+                    initialContext = `Selected Folder: ${uri.fsPath}`;
+                } else {
+                    try {
+                        const content = await vscode.workspace.fs.readFile(uri);
+                        const text = Buffer.from(content).toString('utf-8');
+                        initialContext = `File: ${uri.fsPath}\n\`\`\`\n${text}\n\`\`\``;
+                    } catch (e) {
+                        initialContext = `File: ${uri.fsPath}`;
+                    }
+                }
+            } else {
+                // Invoked from editor context menu
+                const editor = vscode.window.activeTextEditor;
+                if (!editor) {
+                    return;
+                }
+                const selection = editor.selection;
+                if (selection.isEmpty) {
+                    initialContext = `File: ${editor.document.fileName}\n(No specific code selected)`;
+                } else {
+                    const text = editor.document.getText(selection);
+                    initialContext = `File: ${editor.document.fileName}\n\`\`\`${editor.document.languageId}\n${text}\n\`\`\``;
+                }
             }
-            const selection = editor.selection;
-            const text = editor.document.getText(selection);
-            if (!text) {
-                vscode.window.showInformationMessage('No code selected.');
-                return;
-            }
-            createSessionCommand(clientManager, () => treeProvider.refresh(), text);
+
+            createSessionCommand(clientManager, () => treeProvider.refresh(), initialContext);
         }),
 
         vscode.commands.registerCommand('jules.applyPatch', (item) => {
@@ -306,8 +358,31 @@ export async function activate(context: vscode.ExtensionContext) {
         })
     );
 
-    // Initial refresh
-    treeProvider.refresh();
+    // Initial refresh and auto-detect repo
+    const autoDetectRepo = async () => {
+        try {
+            const client = await clientManager.getClient();
+            const detector = new RepoDetector(client);
+            const sourceName = await detector.getMatchingSource();
+            if (sourceName) {
+                treeProvider.setRepoFilter(sourceName);
+                sessionsTreeView.message = `Filtered by: ${sourceName}`;
+            } else {
+                treeProvider.refresh();
+            }
+        } catch (err) {
+            // Client might not be initialized if no API key
+            treeProvider.refresh();
+        }
+    };
+
+    // Check if auto-detect repo setting is enabled
+    const autoDetectEnabled = vscode.workspace.getConfiguration('jules').get<boolean>('autoDetectRepo', true);
+    if (autoDetectEnabled) {
+        autoDetectRepo();
+    } else {
+        treeProvider.refresh();
+    }
 
     // Start background polling if enabled
     const interval = vscode.workspace.getConfiguration('jules').get<number>('autoRefreshInterval', 60);
