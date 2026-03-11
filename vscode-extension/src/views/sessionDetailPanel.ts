@@ -2,12 +2,15 @@ import * as vscode from 'vscode';
 import * as crypto from 'crypto';
 import { Session } from '../api/types';
 import { ClientManager } from '../api/clientManager';
+import { SessionsTreeProvider } from './sessionsTreeProvider';
 
 export class SessionDetailPanel {
     public static panels: Map<string, SessionDetailPanel> = new Map();
+    private static globalPollInterval: NodeJS.Timeout | undefined;
+    private static isPolling: boolean = false;
+
     private readonly _panel: vscode.WebviewPanel;
     private _disposables: vscode.Disposable[] = [];
-    private _pollTimeout: NodeJS.Timeout | undefined;
     private _session: Session; // Refactor: Mutable state
 
     private constructor(
@@ -42,7 +45,59 @@ export class SessionDetailPanel {
             this._disposables
         );
 
-        this._startPolling();
+        // Listen for tree view updates just in case, but rely primarily on our own sequential polling
+        SessionsTreeProvider.onSessionUpdated((updatedSession) => {
+            if (updatedSession.id === this._session.id) {
+                this._update(updatedSession);
+            }
+        }, null, this._disposables);
+
+        // Initial update
+        this._update();
+
+        // Ensure global polling is running
+        SessionDetailPanel.startGlobalPolling();
+    }
+
+    private static startGlobalPolling() {
+        if (this.globalPollInterval) {
+            return;
+        }
+
+        const poll = async () => {
+            if (this.isPolling) {
+                return;
+            }
+            this.isPolling = true;
+
+            try {
+                // Determine if we need to poll fast or slow based on the active panels
+                let hasActive = false;
+
+                // Poll each panel sequentially to avoid 429
+                for (const panel of this.panels.values()) {
+                    const session = await panel._update();
+                    if (session && !['COMPLETED', 'FAILED'].includes(session.state)) {
+                        hasActive = true;
+                    }
+                    // Small delay between panel updates
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+
+                // If any panel is active, poll every 10s. If all are idle, 30s.
+                const nextDelay = hasActive ? 10000 : 30000;
+
+                if (this.panels.size > 0) {
+                    this.globalPollInterval = setTimeout(poll, nextDelay);
+                } else {
+                    this.globalPollInterval = undefined;
+                }
+            } finally {
+                this.isPolling = false;
+            }
+        };
+
+        this.globalPollInterval = setTimeout(poll, 10000);
     }
 
     public static createOrShow(session: Session, clientManager: ClientManager) {
@@ -89,10 +144,12 @@ export class SessionDetailPanel {
         }
     }
 
-    private async _update(): Promise<Session | undefined> {
+    private async _update(updatedSession?: Session): Promise<Session | undefined> {
         try {
             const client = await this.clientManager.getClient();
-            const freshSession = await client.getSession(this._session.id);
+            // If we received an updated session from the TreeProvider, use it
+            // otherwise fetch it to be safe
+            const freshSession = updatedSession || await client.getSession(this._session.id);
             const { activities } = await client.listActivities(this._session.id, 50);
             
             // Sync state: v0.2 Audit fix
@@ -108,25 +165,6 @@ export class SessionDetailPanel {
             console.error('Error updating webview:', err);
             return undefined;
         }
-    }
-
-    private _startPolling() {
-        this._update();
-        
-        const poll = async () => {
-            const terminalStates = ['COMPLETED', 'FAILED'];
-            const idleStates = ['PAUSED', 'QUEUED'];
-
-            const freshSession = await this._update();
-            if (!freshSession || terminalStates.includes(freshSession.state)) {
-                return; // Stop polling
-            }
-
-            const delay = idleStates.includes(freshSession.state) ? 30000 : 10000;
-            this._pollTimeout = setTimeout(poll, delay);
-        };
-
-        this._pollTimeout = setTimeout(poll, 10000);
     }
 
     private _getHtmlForWebview(): string {
@@ -417,9 +455,12 @@ export class SessionDetailPanel {
 
     public dispose() {
         SessionDetailPanel.panels.delete(this._session.id);
-        if (this._pollTimeout) {
-            clearTimeout(this._pollTimeout);
+
+        if (SessionDetailPanel.panels.size === 0 && SessionDetailPanel.globalPollInterval) {
+            clearTimeout(SessionDetailPanel.globalPollInterval);
+            SessionDetailPanel.globalPollInterval = undefined;
         }
+
         this._panel.dispose();
         while (this._disposables.length > 0) {
             const x = this._disposables.pop();
