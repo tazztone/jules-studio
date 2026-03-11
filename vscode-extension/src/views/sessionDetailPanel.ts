@@ -2,7 +2,6 @@ import * as vscode from 'vscode';
 import * as crypto from 'crypto';
 import { Session } from '../api/types';
 import { ClientManager } from '../api/clientManager';
-import { SessionsTreeProvider } from './sessionsTreeProvider';
 
 export class SessionDetailPanel {
     public static panels: Map<string, SessionDetailPanel> = new Map();
@@ -16,7 +15,8 @@ export class SessionDetailPanel {
     private constructor(
         panel: vscode.WebviewPanel,
         session: Session,
-        private readonly clientManager: ClientManager
+        private readonly clientManager: ClientManager,
+        onSessionUpdatedEvent: vscode.Event<Session>
     ) {
         this._session = session;
         this._panel = panel;
@@ -46,7 +46,7 @@ export class SessionDetailPanel {
         );
 
         // Listen for tree view updates just in case, but rely primarily on our own sequential polling
-        SessionsTreeProvider.onSessionUpdated((updatedSession) => {
+        onSessionUpdatedEvent((updatedSession: Session) => {
             if (updatedSession.id === this._session.id) {
                 this._update(updatedSession);
             }
@@ -100,7 +100,7 @@ export class SessionDetailPanel {
         this.globalPollInterval = setTimeout(poll, 10000);
     }
 
-    public static createOrShow(session: Session, clientManager: ClientManager) {
+    public static createOrShow(session: Session, clientManager: ClientManager, onSessionUpdatedEvent: vscode.Event<Session>) {
         const column = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
 
         const existingPanel = SessionDetailPanel.panels.get(session.id);
@@ -119,7 +119,7 @@ export class SessionDetailPanel {
             }
         );
 
-        const sessionDetailPanel = new SessionDetailPanel(panel, session, clientManager);
+        const sessionDetailPanel = new SessionDetailPanel(panel, session, clientManager, onSessionUpdatedEvent);
         SessionDetailPanel.panels.set(session.id, sessionDetailPanel);
     }
 

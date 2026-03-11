@@ -75,6 +75,12 @@
         "category": "Jules"
       },
       {
+        "command": "jules.filterByRepo",
+        "title": "Jules: Filter by Repository",
+        "category": "Jules",
+        "icon": "$(filter)"
+      },
+      {
         "command": "jules.refreshSessions",
         "title": "Jules: Refresh Sessions",
         "category": "Jules",
@@ -147,6 +153,11 @@
         }
       ],
       "view/title": [
+        {
+          "command": "jules.filterByRepo",
+          "when": "view == julesSessions",
+          "group": "navigation"
+        },
         {
           "command": "jules.refreshSessions",
           "when": "view == julesSessions",

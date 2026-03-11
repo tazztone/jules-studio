@@ -86,16 +86,27 @@ export async function activate(context: vscode.ExtensionContext) {
             // Step 3: Verify
             try {
                 await vscode.window.withProgress(
-                    { location: vscode.ProgressLocation.Notification, title: 'Verifying Jules API Key...' },
-                    async () => {
+                    { location: vscode.ProgressLocation.Notification, title: 'Verifying Jules API Key...', cancellable: true },
+                    async (_, token) => {
                         const client = await clientManager.getClient();
-                        await client.listSources(1); // Call a lightweight endpoint
+
+                        // We wrap the listSources call so we can check the token
+                        await new Promise<void>((resolve, reject) => {
+                            client.listSources(1).then(() => resolve()).catch(reject);
+                            token.onCancellationRequested(() => {
+                                reject(new Error('Verification cancelled'));
+                            });
+                        });
                     }
                 );
                 vscode.window.showInformationMessage('✅ API Key verified! You are all set. You can now create sessions.');
                 treeProvider.refresh();
             } catch (err: any) {
-                vscode.window.showErrorMessage(`❌ Key verification failed: ${err.message}. Please check your key and try again.`);
+                if (err.message === 'Verification cancelled') {
+                    vscode.window.showWarningMessage('Setup cancelled.');
+                } else {
+                    vscode.window.showErrorMessage(`❌ Key verification failed: ${err.message}. Please check your key and try again.`);
+                }
                 await authManager.setApiKey(''); // Clear invalid key
                 vscode.commands.executeCommand('setContext', 'jules:hasApiKey', false);
                 codeLensProvider.setApiKeyStatus(false);
@@ -105,7 +116,7 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('jules.openSession', (item) => {
             const session = item?.session || (item as any);
             if (session) {
-                SessionDetailPanel.createOrShow(session, clientManager);
+                SessionDetailPanel.createOrShow(session, clientManager, treeProvider.onSessionUpdated);
             }
         }),
 
@@ -130,7 +141,7 @@ export async function activate(context: vscode.ExtensionContext) {
         }),
 
         vscode.commands.registerCommand('jules.loadMoreSessions', () => {
-            treeProvider.refresh(true);
+            treeProvider.refresh({ mode: 'loadMore' });
         }),
 
         vscode.commands.registerCommand('jules.createSession', () => {
