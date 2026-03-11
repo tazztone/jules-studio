@@ -9,10 +9,16 @@ export class SessionsTreeProvider implements vscode.TreeDataProvider<vscode.Tree
     
     // Proactive tracking: v0.4
     private _previousStates: Map<string, string> = new Map();
+    private _previousUpdateTimes: Map<string, string> = new Map();
     private _bgPollInterval: NodeJS.Timeout | undefined;
     private _sessions: Session[] = [];
     private _nextPageToken: string | undefined;
     private _isFirstLoad: boolean = true;
+
+    private _repoFilter: string | undefined;
+
+    public readonly onSessionUpdatedEmitter = new vscode.EventEmitter<Session>();
+    public readonly onSessionUpdated = this.onSessionUpdatedEmitter.event;
 
     constructor(
         private readonly clientManager: ClientManager,
@@ -26,7 +32,7 @@ export class SessionsTreeProvider implements vscode.TreeDataProvider<vscode.Tree
         this.stopBackgroundPolling();
 
         const poll = async () => {
-            await this.refresh();
+            this.refresh({ mode: 'background' });
 
             // Adaptive polling based on active sessions
             const hasActiveSessions = this._sessions.some(s =>
@@ -50,24 +56,34 @@ export class SessionsTreeProvider implements vscode.TreeDataProvider<vscode.Tree
         }
     }
 
+    public setRepoFilter(repo: string | undefined) {
+        this._repoFilter = repo;
+        this.refresh({ mode: 'user' });
+    }
+
+    public getRepoFilter(): string | undefined {
+        return this._repoFilter;
+    }
+
+    public getLoadedSessions(): Session[] {
+        return this._sessions;
+    }
+
+    private _refreshQueue: { mode: 'user' | 'loadMore' | 'background' }[] = [];
+
     /**
      * Debounced refresh
      */
-    refresh(loadMore: boolean = false): void {
+    refresh(options: { mode: 'user' | 'loadMore' | 'background' } = { mode: 'user' }): void {
+        this._refreshQueue.push(options);
+
         if (this._refreshTimer) {
             clearTimeout(this._refreshTimer);
         }
         this._refreshTimer = setTimeout(() => {
-            if (!loadMore) {
-                // reset pagination on standard refresh
-                this._nextPageToken = undefined;
-            }
-            this._isLoadMoreContext = loadMore;
             this._onDidChangeTreeData.fire();
         }, 300);
     }
-
-    private _isLoadMoreContext: boolean = false;
 
     getTreeItem(element: SessionTreeItem): vscode.TreeItem {
         return element;
@@ -78,21 +94,54 @@ export class SessionsTreeProvider implements vscode.TreeDataProvider<vscode.Tree
             return [];
         }
 
+        // Process all queued requests
+        const requests = [...this._refreshQueue];
+        this._refreshQueue = [];
+
+        const isLoadMore = requests.some(r => r.mode === 'loadMore');
+        const isUserRefresh = requests.some(r => r.mode === 'user');
+        const isBackground = requests.length > 0 && requests.every(r => r.mode === 'background');
+
         try {
             const client = await this.clientManager.getClient();
-            const { sessions = [], nextPageToken } = await client.listSessions(50, this._nextPageToken);
-            
-            if (this._isLoadMoreContext && this._nextPageToken) {
-                // Append unique sessions
-                const existingIds = new Set(this._sessions.map(s => s.id));
-                const newSessions = sessions.filter(s => !existingIds.has(s.id));
-                this._sessions.push(...newSessions);
-            } else {
-                this._sessions = sessions;
+
+            if (isUserRefresh && !isLoadMore) {
+                this._nextPageToken = undefined;
             }
 
-            this._nextPageToken = nextPageToken;
-            this._isLoadMoreContext = false; // Reset after use
+            if (isBackground && this._sessions.length > 0) {
+                // On background poll, only fetch the first page to get state updates
+                // and don't reset _nextPageToken so load more still works later
+                const { sessions = [] } = await client.listSessions(50, undefined);
+
+                // Merge updates into existing sessions to preserve pagination
+                const sessionMap = new Map(this._sessions.map(s => [s.id, s]));
+
+                for (const s of sessions) {
+                    sessionMap.set(s.id, s);
+                }
+
+                // Rebuild array, preserving the order of the newly fetched first page,
+                // then appending any older sessions that weren't in the first page.
+                this._sessions = [
+                    ...sessions,
+                    ...this._sessions.filter(s => !sessions.find(ns => ns.id === s.id))
+                ];
+
+            } else {
+                const { sessions = [], nextPageToken } = await client.listSessions(50, this._nextPageToken);
+
+                if (isLoadMore && this._nextPageToken) {
+                    // Append unique sessions
+                    const existingIds = new Set(this._sessions.map(s => s.id));
+                    const newSessions = sessions.filter(s => !existingIds.has(s.id));
+                    this._sessions.push(...newSessions);
+                } else {
+                    this._sessions = sessions;
+                }
+
+                this._nextPageToken = nextPageToken;
+            }
 
             // Proactive checks: v0.4
             this.handleStateChanges(this._sessions);
@@ -101,12 +150,21 @@ export class SessionsTreeProvider implements vscode.TreeDataProvider<vscode.Tree
                 this.onSessionsUpdate(this._sessions);
             }
 
-            if (this._sessions.length === 0) {
+            const filteredSessions = this._repoFilter
+                ? this._sessions.filter(s => s.sourceContext?.source === this._repoFilter)
+                : this._sessions;
+
+            if (filteredSessions.length === 0) {
+                if (this._repoFilter && this._sessions.length > 0) {
+                     return [new InfoTreeItem(`No sessions match filter '${this._repoFilter}'.`)];
+                }
                 return [new InfoTreeItem('No sessions found.')];
             }
 
-            const items: vscode.TreeItem[] = this._sessions.map(s => new SessionTreeItem(s));
-            if (this._nextPageToken) {
+            const items: vscode.TreeItem[] = filteredSessions.map(s => new SessionTreeItem(s));
+            // Only show load more if not filtered (as filtering happens client side for now, load more would be confusing)
+            // or if we have a next page token.
+            if (this._nextPageToken && !this._repoFilter) {
                 items.push(new LoadMoreTreeItem());
             }
 
@@ -119,25 +177,25 @@ export class SessionsTreeProvider implements vscode.TreeDataProvider<vscode.Tree
         }
     }
 
-    public static readonly onSessionUpdatedEmitter = new vscode.EventEmitter<Session>();
-    public static readonly onSessionUpdated = SessionsTreeProvider.onSessionUpdatedEmitter.event;
-
     private handleStateChanges(sessions: Session[]) {
         const changes: Session[] = [];
         for (const session of sessions) {
             const prevState = this._previousStates.get(session.id);
+            const prevUpdateTime = this._previousUpdateTimes.get(session.id);
+
             if (!prevState || (prevState && prevState !== session.state && !this._isFirstLoad)) {
                 if (prevState) {
                     changes.push(session); // Only notify via popups if it's an actual change (not first load)
                 }
                 // Broadcast state change to any listening panels
-                SessionsTreeProvider.onSessionUpdatedEmitter.fire(session);
-            } else if (prevState === session.state && ['IN_PROGRESS', 'QUEUED', 'PLANNING'].includes(session.state)) {
-                // If the session is actively doing something, we still might want to notify panels
-                // to pull the latest activities even if the state hasn't changed.
-                SessionsTreeProvider.onSessionUpdatedEmitter.fire(session);
+                this.onSessionUpdatedEmitter.fire(session);
+            } else if (prevState === session.state && prevUpdateTime !== session.updateTime && ['IN_PROGRESS', 'QUEUED', 'PLANNING'].includes(session.state)) {
+                // If the session is actively doing something and has actually updated,
+                // notify panels to pull the latest activities even if the state hasn't changed.
+                this.onSessionUpdatedEmitter.fire(session);
             }
             this._previousStates.set(session.id, session.state);
+            this._previousUpdateTimes.set(session.id, session.updateTime);
         }
 
         this._isFirstLoad = false;
@@ -219,7 +277,7 @@ export class LoadMoreTreeItem extends vscode.TreeItem {
 
 export class SessionTreeItem extends vscode.TreeItem {
     constructor(public readonly session: Session) {
-        const title = session.title || session.prompt.slice(0, 50) + (session.prompt.length > 50 ? '...' : '');
+        const title = session.title || session.prompt?.slice(0, 50) + (session.prompt?.length > 50 ? '...' : '') || session.id;
         super(title, vscode.TreeItemCollapsibleState.None);
         
         this.description = this.getStateLabel(session.state);

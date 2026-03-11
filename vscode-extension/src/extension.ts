@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as crypto from 'crypto';
 import { AuthManager } from './auth/keyManager';
 import { ClientManager } from './api/clientManager';
 import { SessionsTreeProvider } from './views/sessionsTreeProvider';
@@ -9,6 +10,7 @@ import { StatusBarManager } from './views/statusBar';
 import { JulesCodeLensProvider } from './codelens/julesCodeLensProvider';
 
 let treeProvider: SessionsTreeProvider;
+let sessionsTreeView: vscode.TreeView<vscode.TreeItem>;
 
 export async function activate(context: vscode.ExtensionContext) {
     const authManager = new AuthManager(context);
@@ -19,7 +21,10 @@ export async function activate(context: vscode.ExtensionContext) {
     });
     
     // Register TreeView
-    vscode.window.registerTreeDataProvider('julesSessions', treeProvider);
+    sessionsTreeView = vscode.window.createTreeView('julesSessions', {
+        treeDataProvider: treeProvider,
+        showCollapseAll: false
+    });
 
     // Register CodeLens Provider
     const codeLensProvider = new JulesCodeLensProvider();
@@ -86,16 +91,27 @@ export async function activate(context: vscode.ExtensionContext) {
             // Step 3: Verify
             try {
                 await vscode.window.withProgress(
-                    { location: vscode.ProgressLocation.Notification, title: 'Verifying Jules API Key...' },
-                    async () => {
+                    { location: vscode.ProgressLocation.Notification, title: 'Verifying Jules API Key...', cancellable: true },
+                    async (_, token) => {
                         const client = await clientManager.getClient();
-                        await client.listSources(1); // Call a lightweight endpoint
+
+                        // We wrap the listSources call so we can check the token
+                        await new Promise<void>((resolve, reject) => {
+                            client.listSources(1).then(() => resolve()).catch(reject);
+                            token.onCancellationRequested(() => {
+                                reject(new Error('Verification cancelled'));
+                            });
+                        });
                     }
                 );
                 vscode.window.showInformationMessage('✅ API Key verified! You are all set. You can now create sessions.');
                 treeProvider.refresh();
             } catch (err: any) {
-                vscode.window.showErrorMessage(`❌ Key verification failed: ${err.message}. Please check your key and try again.`);
+                if (err.message === 'Verification cancelled') {
+                    vscode.window.showWarningMessage('Setup cancelled.');
+                } else {
+                    vscode.window.showErrorMessage(`❌ Key verification failed: ${err.message}. Please check your key and try again.`);
+                }
                 await authManager.setApiKey(''); // Clear invalid key
                 vscode.commands.executeCommand('setContext', 'jules:hasApiKey', false);
                 codeLensProvider.setApiKeyStatus(false);
@@ -105,7 +121,7 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('jules.openSession', (item) => {
             const session = item?.session || (item as any);
             if (session) {
-                SessionDetailPanel.createOrShow(session, clientManager);
+                SessionDetailPanel.createOrShow(session, clientManager, treeProvider.onSessionUpdated);
             }
         }),
 
@@ -130,7 +146,7 @@ export async function activate(context: vscode.ExtensionContext) {
         }),
 
         vscode.commands.registerCommand('jules.loadMoreSessions', () => {
-            treeProvider.refresh(true);
+            treeProvider.refresh({ mode: 'loadMore' });
         }),
 
         vscode.commands.registerCommand('jules.createSession', () => {
@@ -194,18 +210,19 @@ export async function activate(context: vscode.ExtensionContext) {
 
         vscode.commands.registerCommand('jules.openInBrowser', (item) => {
             const session = item?.session || (item as any);
-            if (session?.name) {
+            if (session?.url) {
+                vscode.env.openExternal(vscode.Uri.parse(session.url));
+            } else if (session?.name) {
                 const sessionId = session.name.split('/').pop();
                 const url = `https://jules.google.com/sessions/${sessionId}`;
                 vscode.env.openExternal(vscode.Uri.parse(url));
-            } else if (session?.url) {
-                vscode.env.openExternal(vscode.Uri.parse(session.url));
             }
         }),
 
         vscode.commands.registerCommand('jules.sendTerminalToJules', async () => {
+            const markerId = crypto.randomUUID();
             const doc = await vscode.workspace.openTextDocument({
-                content: '\n\n// --- PASTE TERMINAL ERROR OUTPUT ABOVE THIS LINE ---\n// Once pasted, save (Ctrl+S) or close this file to proceed, \n// or click "Create Session" in the notification below.',
+                content: `\n\n// --- PASTE TERMINAL ERROR OUTPUT ABOVE THIS LINE ---\n// Marker: ${markerId}\n// Once pasted, save (Ctrl+S) or close this file to proceed, \n// or click "Create Session" in the notification below.`,
                 language: 'log'
             });
             await vscode.window.showTextDocument(doc);
@@ -216,7 +233,10 @@ export async function activate(context: vscode.ExtensionContext) {
             );
 
             if (selection === 'Create Session') {
-                const errorText = doc.getText().split('// --- PASTE TERMINAL ERROR OUTPUT ABOVE THIS LINE ---')[0].trim();
+                const docText = doc.getText();
+                const markerText = `// --- PASTE TERMINAL ERROR OUTPUT ABOVE THIS LINE ---\n// Marker: ${markerId}`;
+                const errorText = docText.split(markerText)[0].trim();
+
                 if (!errorText) {
                     vscode.window.showWarningMessage('No error text found. Please paste the error above the marker.');
                     return;
@@ -226,6 +246,38 @@ export async function activate(context: vscode.ExtensionContext) {
                 
                 await createSessionCommand(clientManager, () => treeProvider.refresh(), 
                     `Fix the following terminal error:\n\n\`\`\`\n${errorText}\n\`\`\``);
+            }
+        }),
+
+        vscode.commands.registerCommand('jules.filterByRepo', async () => {
+            const sessions = treeProvider.getLoadedSessions();
+
+            // Extract unique repos
+            const repos = new Set<string>();
+            sessions.forEach(s => {
+                if (s.sourceContext?.source) {
+                    repos.add(s.sourceContext.source);
+                }
+            });
+
+            const currentFilter = treeProvider.getRepoFilter();
+            const clearOption = { label: '$(clear-all) Clear Filter', description: currentFilter ? `Current: ${currentFilter}` : '' };
+            const repoItems = Array.from(repos).map(repo => ({ label: repo }));
+
+            const items = [clearOption, ...repoItems];
+
+            const selected = await vscode.window.showQuickPick(items, {
+                placeHolder: 'Select a repository to filter sessions by'
+            });
+
+            if (selected) {
+                if (selected === clearOption) {
+                    treeProvider.setRepoFilter(undefined);
+                    sessionsTreeView.message = undefined;
+                } else {
+                    treeProvider.setRepoFilter(selected.label);
+                    sessionsTreeView.message = `Filtered by: ${selected.label}`;
+                }
             }
         }),
 
