@@ -4,67 +4,39 @@ All notable changes to **Jules Studio for VS Code** are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.2.0-beta.12] — 2026-03-10
+The **v0.2.0-beta** series focuses on stabilizing the CI/CD pipeline, refining UI/UX safety (confirmations, loading states), and hardening monorepo integrity through linting and test isolation improvements.
 
-### Fixed
-- **CI/CD Pipeline**: Granted `contents: write` permissions to the `release.yml` workflow to allow automated GitHub Release creation.
-
-## [0.2.0-beta.11] — 2026-03-10
-
-### Fixed
-- **CI/CD Pipeline**: Fixed missing `npm ci` dependency step in the `release.yml` publish job that caused `v0.2.0-beta.10` deployments to fail.
-
-## [0.2.0-beta.10] — 2026-03-10
-
-### Fixed
-- **Web App**: Fixed a latent infinite loop in `SourcesView` caused by `useCallback` dependencies.
-- **Tests**: Resolved a test collision where root Vitest was incorrectly picking up extension tests.
-- **Documentation**: Annotated CI/CD workflows to clarify IDE false-positive warnings.
-
-## [0.2.0-beta.9] — 2026-03-10
+## [0.2.0-beta.13] — 2026-03-11
 
 ### Added
-- **CI/CD Automation**: Integrated GitHub Actions for automated testing and Open VSX publishing.
-- **CI Status Badge**: Added real-time build status to the README.
-
-### Fixed
-- **Monorepo Linting**: Decoupled root (ESLint 9) and extension (Legacy) configurations to prevent OOM errors and rule conflicts.
-- **Infinite Loops**: Resolved recursive re-render bugs in `SessionsList` and `SourcesView` caused by `useCallback` state dependencies.
-- **Runtime Errors**: Fixed a `ReferenceError` in `SessionDetailView` where polling functions were accessed before initialization.
-- **Unit Tests**: Fixed a `TypeError` in the extension's unit tests related to Mocha timeout context in async functions.
-- **Tests**: Wrapped global fetch mocks in `try/finally` for better test isolation.
-- **CI Configuration**: Standardized `workflow_call` syntax for cross-workflow compatibility.
-- **General Linting**: Resolved 70+ ESLint errors across the monorepo.
-
-## [0.2.0-beta.3] — 2026-03-10
-
-### Fixed
-- **CI Linting**: Fixed 27 ESLint warnings in the extension.
-
-## [0.2.0-beta.2] — 2026-03-10
-
-### Added
-- **CI/CD Automation**: Integrated GitHub Actions for automated testing and Open VSX publishing.
-- **CI Status Badge**: Added real-time build status to the README.
-
-## [0.2.0-beta.1] — 2026-03-10
+- **Repository Detection**: Added a fallback UI and improved error handling when automatic repository detection fails.
+- **CodeLens Intelligence**: CodeLens actions (Write Tests/Refactor) are now dynamically hidden if no API key is configured or if the active file is not part of a Git repository.
 
 ### Changed
-- **Beta Preview**: Marked extension as a preview release to manage expectations.
-
-### Fixed
-- **Configuration Bug**: Relocated `configuration` block inside `contributes` in `package.json` so settings correctly appear in VS Code.
-- **Timer Leak**: Ensured background polling stops immediately on extension deactivation.
-- **Test Isolation**: Wrapped global fetch mocks in `try/finally` to prevent test-to-test leakage.
+- **Configuration**: Renamed `jules.autoApplyAfterApproval` to `jules.autoApplyAfterCompletion` to more accurately reflect its behavior.
+- **Security**: Upgraded Webview Content Security Policy (CSP) to use cryptographically secure nonces (`crypto.randomBytes`).
 
 ### Improved
-- **Destructive Action Safety**: Added modal confirmation dialog before running terminal-based code applications.
-- **Multi-line Error Input**: "Send Terminal Error to Jules" now opens a temporary text editor for full stack trace support.
-- **Webview UX**: Buttons now provide immediate visual feedback (disabled + loading text) while actions are in flight.
+- **Session Detail View**: Significant internal refactoring to support better state transitions and more robust error fallbacks.
 
-### Testing
-- **Coverage**: Added 16 automated tests covering `RepoDetector` URL parsing, `SessionsTreeProvider` data mapping, and `JulesClient` retry/error logic.
-- **Linting**: Added official ESLint configuration for the project.
+## [0.2.0-beta.1] through [0.2.0-beta.12] — Summary of Improvements
+
+This series of beta releases focused on transitioning the project to a robust monorepo structure with automated delivery and hardened user safety.
+
+### Development & Automation
+- **CI/CD Pipeline**: Integrated GitHub Actions for automated testing and multi-registry publishing (Open VSX). Established secure release workflows with automated versioning.
+- **Monorepo Integrity**: Standardized linting rules across the codebase, decoupling extension and web app configurations to resolve conflicts.
+- **Testing**: significantly increased test coverage for core logic (Repo Detection, TreeView mapping) and implemented strict test isolation for asynchronous operations.
+
+### UI/UX & Safety
+- **Operation Safety**: Introduced modal confirmations for destructive or terminal-based actions.
+- **Feedback Loops**: Added loading states and disabled-button states to prevent redundant action triggers. 
+- **Error Handling**: Implemented a temporary text editor flow for submitting complex terminal errors to Jules, overcoming previous multi-line input limitations.
+
+### Stability
+- **Loop Prevention**: Resolved multiple recursive re-render bugs in the web app views.
+- **Resource Management**: Fixed background polling leaks and ensured clean extension deactivation.
+- **Hardening**: Fixed 100+ ESLint errors and resolved various latent `ReferenceError` and `TypeError` issues across the extension.
 
 ---
 
