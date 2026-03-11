@@ -4,7 +4,19 @@ All notable changes to **Jules Studio for VS Code** are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-The **v0.2.0-beta** series focuses on stabilizing the CI/CD pipeline, refining UI/UX safety (confirmations, loading states), and hardening monorepo integrity through linting and test isolation improvements.
+The **v0.3.x-beta** series focuses on comprehensive testing coverage, logic hardening, and preparing the foundation for stable v1.0 releases.
+
+## [0.3.0-beta.1] — 2026-03-11
+
+### Added
+- **Major Testing Overhaul**: Implemented 30+ unit tests for core modules including `Validators`, `Errors`, `PromptGenerator`, and `GitContext`.
+- **UI State Verification**: Added tests for `SessionsTreeProvider` to ensure correct icon and tooltip mapping.
+
+### Fixed
+- **Git Security**: Restricted `parseGithubUrl` to `github.com` domains to prevent accidental matching of other providers.
+- **Git Error Handling**: Standardized Git error parsing to be case-insensitive, ensuring that network and authentication errors are correctly caught.
+- **Network Resilience**: Added specific detection for `Connection refused` network errors.
+- **Validation**: Fixed an edge case in `validateSessionResponse` length validation.
 
 ## [0.2.0-beta.13] — 2026-03-11
 

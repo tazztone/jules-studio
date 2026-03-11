@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { SessionTreeItem } from '../../views/sessionsTreeProvider';
+import { SessionTreeItem, SessionsTreeProvider } from '../../views/sessionsTreeProvider';
 
 suite('SessionsTreeProvider Helper Test Suite', () => {
     const mockSession = (state: string) => ({
@@ -38,5 +38,34 @@ suite('SessionsTreeProvider Helper Test Suite', () => {
         assert.ok((item as any).getApplyAction('COMPLETED').includes('Apply Changes'));
         assert.ok((item as any).getApplyAction('AWAITING_PLAN_APPROVAL').includes('Approve Plan'));
         assert.ok((item as any).getApplyAction('PLANNING').includes('Wait'));
+    });
+
+    test('SessionTreeItem - UI elements', () => {
+        const item = new SessionTreeItem(mockSession('COMPLETED'));
+        
+        // Icon
+        const icon = (item as any).getStateIcon('COMPLETED');
+        assert.strictEqual(icon.id, 'check');
+
+        // Tooltip
+        const tooltip = (item as any).createTooltip(mockSession('COMPLETED'));
+        assert.ok(tooltip.value.includes('**Session:** 123'));
+        assert.ok(tooltip.value.includes('Completed'));
+    });
+
+    // Note: We can only test the state tracking part of handleStateChanges 
+    // without mocking the entire VS Code notification system (e.g. via Sinon)
+    test('handleStateChanges - state tracking', () => {
+        const provider = new SessionsTreeProvider(null!, null!);
+        const session = mockSession('PLANNING');
+        
+        // Initial state
+        (provider as any).handleStateChanges([session]);
+        assert.strictEqual((provider as any)._previousStates.get('123'), 'PLANNING');
+
+        // State change
+        const updatedSession = mockSession('COMPLETED');
+        (provider as any).handleStateChanges([updatedSession]);
+        assert.strictEqual((provider as any)._previousStates.get('123'), 'COMPLETED');
     });
 });

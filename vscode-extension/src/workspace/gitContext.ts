@@ -242,9 +242,9 @@ export class GitContextManager {
      * @private
      */
     private parseGitError(error: any): string {
-        const errorStr = error.message || error.toString();
+        const errorStr = (error.message || error.toString()).toLowerCase();
 
-        if (errorStr.includes('network') || errorStr.includes('Could not resolve host')) {
+        if (errorStr.includes('network') || errorStr.includes('could not resolve host') || errorStr.includes('connection refused')) {
             return 'Git push failed: No network connection. Please check your internet connection.';
         }
 
@@ -285,7 +285,7 @@ export class GitContextManager {
      */
     private parseGithubUrl(url: string) {
         // Matches git@github.com:owner/repo.git or https://github.com/owner/repo.git
-        const regex = /(?:git@|https:\/\/)(?:[\w\.@]+)[\/:]([\w-]+)\/([\w-]+)(?:\.git)?/;
+        const regex = /(?:git@|https:\/\/)(?:github\.com)[\/:]([\w-]+)\/([\w-]+)(?:\.git)?/;
         const match = url.match(regex);
         if (!match) throw new Error(`Could not parse Git Remote URL: ${url}`);
         return { owner: match[1], name: match[2] };
