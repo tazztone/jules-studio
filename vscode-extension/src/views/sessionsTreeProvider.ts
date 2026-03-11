@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import { Session } from '../api/types';
 import { ClientManager } from '../api/clientManager';
-import { CliRunner } from '../terminal/cliRunner';
 
 export class SessionsTreeProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
     private _onDidChangeTreeData: vscode.EventEmitter<vscode.TreeItem | undefined | null | void> = new vscode.EventEmitter<vscode.TreeItem | undefined | null | void>();
@@ -63,9 +62,12 @@ export class SessionsTreeProvider implements vscode.TreeDataProvider<vscode.Tree
                 // reset pagination on standard refresh
                 this._nextPageToken = undefined;
             }
+            this._isLoadMoreContext = loadMore;
             this._onDidChangeTreeData.fire();
         }, 300);
     }
+
+    private _isLoadMoreContext: boolean = false;
 
     getTreeItem(element: SessionTreeItem): vscode.TreeItem {
         return element;
@@ -80,13 +82,17 @@ export class SessionsTreeProvider implements vscode.TreeDataProvider<vscode.Tree
             const client = await this.clientManager.getClient();
             const { sessions = [], nextPageToken } = await client.listSessions(50, this._nextPageToken);
             
-            if (this._nextPageToken) {
-                this._sessions.push(...sessions);
+            if (this._isLoadMoreContext && this._nextPageToken) {
+                // Append unique sessions
+                const existingIds = new Set(this._sessions.map(s => s.id));
+                const newSessions = sessions.filter(s => !existingIds.has(s.id));
+                this._sessions.push(...newSessions);
             } else {
                 this._sessions = sessions;
             }
 
             this._nextPageToken = nextPageToken;
+            this._isLoadMoreContext = false; // Reset after use
 
             // Proactive checks: v0.4
             this.handleStateChanges(this._sessions);
@@ -113,12 +119,23 @@ export class SessionsTreeProvider implements vscode.TreeDataProvider<vscode.Tree
         }
     }
 
+    public static readonly onSessionUpdatedEmitter = new vscode.EventEmitter<Session>();
+    public static readonly onSessionUpdated = SessionsTreeProvider.onSessionUpdatedEmitter.event;
+
     private handleStateChanges(sessions: Session[]) {
         const changes: Session[] = [];
         for (const session of sessions) {
             const prevState = this._previousStates.get(session.id);
-            if (prevState && prevState !== session.state && !this._isFirstLoad) {
-                changes.push(session);
+            if (!prevState || (prevState && prevState !== session.state && !this._isFirstLoad)) {
+                if (prevState) {
+                    changes.push(session); // Only notify via popups if it's an actual change (not first load)
+                }
+                // Broadcast state change to any listening panels
+                SessionsTreeProvider.onSessionUpdatedEmitter.fire(session);
+            } else if (prevState === session.state && ['IN_PROGRESS', 'QUEUED', 'PLANNING'].includes(session.state)) {
+                // If the session is actively doing something, we still might want to notify panels
+                // to pull the latest activities even if the state hasn't changed.
+                SessionsTreeProvider.onSessionUpdatedEmitter.fire(session);
             }
             this._previousStates.set(session.id, session.state);
         }
@@ -147,22 +164,16 @@ export class SessionsTreeProvider implements vscode.TreeDataProvider<vscode.Tree
                 }
             });
         } else if (session.state === 'COMPLETED') {
-            const autoApply = vscode.workspace.getConfiguration('jules').get<boolean>('autoApplyAfterCompletion', false);
-            if (autoApply) {
-                vscode.window.showInformationMessage(`🚀 Jules: Auto-applying changes for "${title}"...`);
-                CliRunner.applyPatch(session, this.clientManager);
-            } else {
-                vscode.window.showInformationMessage(
-                    `✅ Jules: Session "${title}" completed successfully!`,
-                    'Apply Changes', 'Open Detail'
-                ).then(selection => {
-                    if (selection === 'Apply Changes') {
-                        vscode.commands.executeCommand('jules.applyPatch', { session });
-                    } else if (selection === 'Open Detail') {
-                        vscode.commands.executeCommand('jules.openSession', { session });
-                    }
-                });
-            }
+            vscode.window.showInformationMessage(
+                `✅ Jules: Session "${title}" completed successfully!`,
+                'Apply Changes', 'Open Detail'
+            ).then(selection => {
+                if (selection === 'Apply Changes') {
+                    vscode.commands.executeCommand('jules.applyPatch', { session });
+                } else if (selection === 'Open Detail') {
+                    vscode.commands.executeCommand('jules.openSession', { session });
+                }
+            });
         } else if (session.state === 'AWAITING_USER_FEEDBACK') {
             vscode.window.showInformationMessage(
                 `💬 Jules: Session "${title}" needs your input.`,
