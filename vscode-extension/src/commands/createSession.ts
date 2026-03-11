@@ -1,6 +1,11 @@
 import * as vscode from 'vscode';
 import { ClientManager } from '../api/clientManager';
 import { RepoDetector } from '../workspace/repoDetector';
+import { validatePrompt, validateBranchName } from '../utils/validators';
+import { ValidationError, SecurityError } from '../utils/errors';
+import { PromptGenerator } from '../workspace/promptGenerator';
+import { GitContextManager } from '../workspace/gitContext';
+import { GeminiClient } from '../api/geminiClient';
 
 export async function createSessionCommand(clientManager: ClientManager, refresh: () => void, initialContext?: string) {
     try {
@@ -43,38 +48,111 @@ export async function createSessionCommand(clientManager: ClientManager, refresh
             return;
         }
 
-        // 1b. Include Active File?
-        const activeEditor = vscode.window.activeTextEditor;
-        let fileContext = '';
-        if (activeEditor) {
-            const includeFile = await vscode.window.showQuickPick(
+        // 1b. Brain Artifact Discovery (Antigravity)
+        const outputChannel = vscode.window.createOutputChannel('Jules Bridge');
+
+        // Pass a GeminiClient so PromptGenerator can extract a smart summary to prepopulate our input box
+        const authManager = clientManager.authManager;
+        const geminiClient = new GeminiClient(authManager);
+
+        const generator = new PromptGenerator(outputChannel, geminiClient);
+        let selectedBrainContextPath: string | undefined;
+
+        const contexts = await generator.getAvailableContexts();
+        if (contexts && contexts.length > 0) {
+            const brainChoice = await vscode.window.showQuickPick(
                 [
-                    { label: '$(file) Include Active File', detail: activeEditor.document.fileName, picked: true },
-                    { label: '$(x) Skip', detail: 'Don\'t include file context' }
+                    { label: '$(x) None', detail: 'Do not include previous agent brain context', path: undefined },
+                    ...contexts.map(c => ({
+                        label: `$(brain) ${c.name}`,
+                        detail: c.title,
+                        path: c.path
+                    }))
                 ],
-                { placeHolder: 'Include the currently open file as context?' }
+                { placeHolder: 'Continue from an existing agent context?' }
             );
-            if (includeFile?.label.includes('Include')) {
-                const doc = activeEditor.document;
-                // Basic truncation for safety
-                const text = doc.getText();
-                const lines = text.split('\n');
-                const truncatedText = lines.length > 500 ? lines.slice(0, 500).join('\n') + '\n... (truncated)' : text;
-                fileContext = `\n\nFile: ${doc.fileName}\n\`\`\`${doc.languageId}\n${truncatedText}\n\`\`\``;
+
+            if (brainChoice && brainChoice.path) {
+                selectedBrainContextPath = brainChoice.path;
             }
         }
 
+        // 5. Detect current branch: v0.2 Audit Fix
+        const gitExt = vscode.extensions.getExtension('vscode.git')?.exports;
+        const api = gitExt?.getAPI(1);
+        const repo = api?.repositories[0];
+        let currentBranch = repo?.state?.HEAD?.name || 'main';
+
+        const config = vscode.workspace.getConfiguration('jules');
+        const autoSyncWip = config.get<boolean>('autoSyncWip', false);
+
+        // Ensure generator uses the selected context path (if any) when we implement the full prompt generation in the next step.
+        // For now, we will add selectedBrainContextPath to the fileContext to silence the unused variable warning
+        let fileContext = '';
+        if (selectedBrainContextPath) {
+            fileContext += `\n\nContinuing from Antigravity Brain Context: ${selectedBrainContextPath}`;
+        }
+
+        // 1c. Generate Rich Context from PromptGenerator & Auto-Sync
+        const activeEditor = vscode.window.activeTextEditor;
+        let generatedContext = '';
+        if (repo) {
+            if (autoSyncWip) {
+                const isDirty = repo.state.workingTreeChanges.length > 0 || repo.state.indexChanges.length > 0;
+                if (isDirty) {
+                    const gitManager = new GitContextManager(outputChannel);
+                    await vscode.window.withProgress(
+                        { location: vscode.ProgressLocation.Notification, title: 'Auto-Syncing Uncommitted Changes...' },
+                        async () => {
+                            await gitManager.pushWipChanges(repo as any);
+                            currentBranch = repo?.state?.HEAD?.name || currentBranch;
+                        }
+                    );
+                }
+            }
+
+            await vscode.window.withProgress(
+                { location: vscode.ProgressLocation.Notification, title: 'Gathering Workspace Context...' },
+                async () => {
+                    generatedContext = await generator.generatePrompt(repo, activeEditor, selectedBrainContextPath);
+                }
+            );
+        }
+
+        // Append earlier brain context selection if we had one and generator doesn't do it
+        if (fileContext && !generatedContext.includes(selectedBrainContextPath || '')) {
+            generatedContext += fileContext;
+        }
+
         // 2. Prompt
+        // The generator's `generatePrompt` returns an XML string that contains `<mission_brief>...</mission_brief>`.
+        // Let's attempt to extract it to prefill the prompt box.
+        let defaultPrompt = initialContext || '';
+        if (generatedContext) {
+            const briefMatch = generatedContext.match(/<mission_brief>([\s\S]*?)<\/mission_brief>/);
+            if (briefMatch && briefMatch[1] && !briefMatch[1].includes('[Describe your task here...]')) {
+                defaultPrompt = briefMatch[1].trim();
+            }
+        }
+
         const prompt = await vscode.window.showInputBox({
             prompt: initialContext ? 'What should Jules do with this code?' : 'What should Jules do?',
-            placeHolder: 'e.g., Fix the bug in auth middleware, Add unit tests for utils.js'
+            placeHolder: 'e.g., Fix the bug in auth middleware, Add unit tests for utils.js',
+            value: defaultPrompt
         });
         if (!prompt) {
             return;
         }
 
-        const combinedContext = [initialContext, fileContext].filter(Boolean).join('\n\n');
-        const finalPrompt = combinedContext ? `${prompt}\n\nCode Context:\n${combinedContext}` : prompt;
+        try {
+            validatePrompt(prompt);
+        } catch (err: any) {
+            vscode.window.showErrorMessage(`Invalid prompt: ${err.message}`);
+            return;
+        }
+
+        const combinedContext = [initialContext, generatedContext].filter(Boolean).join('\n\n');
+        const finalPrompt = combinedContext ? `${prompt}\n\n${combinedContext}` : prompt;
 
         // 3. Optional Title
         const title = await vscode.window.showInputBox({
@@ -94,11 +172,12 @@ export async function createSessionCommand(clientManager: ClientManager, refresh
             return;
         }
 
-        // 5. Detect current branch: v0.2 Audit Fix
-        const gitExt = vscode.extensions.getExtension('vscode.git')?.exports;
-        const api = gitExt?.getAPI(1);
-        const repo = api?.repositories[0];
-        const currentBranch = repo?.state?.HEAD?.name || 'main';
+        try {
+            validateBranchName(currentBranch);
+        } catch (err: any) {
+            vscode.window.showErrorMessage(`Invalid branch name: ${err.message}`);
+            return;
+        }
 
         const sourceContext = {
             source: sourceName,
@@ -125,7 +204,11 @@ export async function createSessionCommand(clientManager: ClientManager, refresh
         vscode.commands.executeCommand('jules.openSession', { session });
 
     } catch (err: any) {
-        if (err.message.includes('API Key missing')) {
+        if (err instanceof ValidationError || err instanceof SecurityError) {
+            vscode.window.showErrorMessage(`Validation failed: ${err.message}`);
+            return;
+        }
+        if (err.message?.includes('API Key missing')) {
             return; // KeyManager already shows error message
         }
         vscode.window.showErrorMessage(`Failed to create session: ${err.message}`);
