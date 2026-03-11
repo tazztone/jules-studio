@@ -31,6 +31,10 @@ jobs:
         run: npm ci
         working-directory: vscode-extension
       
+      - name: Package Extension
+        run: npx @vscode/vsce package --out jules-vscode.vsix
+        working-directory: vscode-extension
+
       - name: Publish to Open VSX
         uses: HaaLeo/publish-vscode-extension@v2
         id: publish
@@ -43,6 +47,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ steps.publish.outputs.vsixPath }}
+          files: |
+            vscode-extension/jules-vscode.vsix
           generate_release_notes: true
           prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
