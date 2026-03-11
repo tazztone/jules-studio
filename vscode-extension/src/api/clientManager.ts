@@ -5,7 +5,7 @@ export class ClientManager {
     private _client: JulesClient | undefined;
     private _cachedKey: string | undefined;
 
-    constructor(private readonly authManager: AuthManager) {}
+    constructor(public readonly authManager: AuthManager) {}
 
     /**
      * Returns a cached JulesClient instance. 

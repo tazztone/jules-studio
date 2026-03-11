@@ -201,6 +201,11 @@
           "default": 60,
           "minimum": 0,
           "description": "Auto-refresh interval in seconds (0 to disable). Enables proactive notifications."
+        },
+        "jules.autoSyncWip": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically stage, commit to a new branch (wip-jules-YYYY...), and push before creating a Jules session."
         }
       }
     }
