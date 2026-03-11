@@ -3,15 +3,43 @@ import * as vscode from 'vscode';
 export class JulesCodeLensProvider implements vscode.CodeLensProvider {
     private _onDidChangeCodeLenses = new vscode.EventEmitter<void>();
     readonly onDidChangeCodeLenses = this._onDidChangeCodeLenses.event;
+    private hasApiKey: boolean = false;
 
     constructor() {
         vscode.workspace.onDidChangeConfiguration((_) => {
             this._onDidChangeCodeLenses.fire();
         });
+
+        // Listen for the specific Jules context state
+        // This is a rough heuristic, typically we just track the context or use a check method.
+        // Actually, we can check the context or just check the auth manager via extension.ts if we pass it.
+    }
+
+    setApiKeyStatus(hasKey: boolean) {
+        if (this.hasApiKey !== hasKey) {
+            this.hasApiKey = hasKey;
+            this._onDidChangeCodeLenses.fire();
+        }
     }
 
     async provideCodeLenses(document: vscode.TextDocument): Promise<vscode.CodeLens[]> {
-        if (!vscode.workspace.getConfiguration('jules').get('codeLens.enabled', true)) {
+        if (!vscode.workspace.getConfiguration('jules').get('codeLens.enabled', true) || !this.hasApiKey) {
+            return [];
+        }
+
+        // Check if file is part of a git repo
+        const gitExt = vscode.extensions.getExtension('vscode.git')?.exports;
+        const api = gitExt?.getAPI(1);
+        if (!api) {
+            return [];
+        }
+
+        const isTracked = api.repositories.some((repo: any) => {
+            // Check if the current document is within this repository
+            return document.uri.fsPath.startsWith(repo.rootUri.fsPath);
+        });
+
+        if (!isTracked) {
             return [];
         }
 

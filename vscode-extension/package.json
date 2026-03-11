@@ -81,6 +81,11 @@
         "icon": "$(refresh)"
       },
       {
+        "command": "jules.loadMoreSessions",
+        "title": "Jules: Load More Sessions",
+        "category": "Jules"
+      },
+      {
         "command": "jules.openSession",
         "title": "Jules: Open Session Detail",
         "category": "Jules"
@@ -197,7 +202,7 @@
           "minimum": 0,
           "description": "Auto-refresh interval in seconds (0 to disable). Enables proactive notifications."
         },
-        "jules.autoApplyAfterApproval": {
+        "jules.autoApplyAfterCompletion": {
           "type": "boolean",
           "default": false,
           "description": "Automatically pull and apply changes when a session completes."

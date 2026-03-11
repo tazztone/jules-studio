@@ -30,7 +30,9 @@ export async function activate(context: vscode.ExtensionContext) {
     // Initial context check
     const checkApiKey = async () => {
         const key = await authManager.getApiKey();
-        vscode.commands.executeCommand('setContext', 'jules:hasApiKey', !!key);
+        const hasKey = !!key;
+        vscode.commands.executeCommand('setContext', 'jules:hasApiKey', hasKey);
+        codeLensProvider.setApiKeyStatus(hasKey);
     };
     checkApiKey();
 
@@ -48,40 +50,62 @@ export async function activate(context: vscode.ExtensionContext) {
             }
         }),
         vscode.commands.registerCommand('jules.setupWizard', async () => {
-            const step1 = '1. Get API Key';
-            const step2 = '2. Configure Key';
-            const step3 = '3. Verify & Finish';
-            
-            const choice = await vscode.window.showQuickPick([step1, step2, step3], {
-                placeHolder: 'Jules Setup Wizard 🐙'
+            const getApiKeyChoice = await vscode.window.showInformationMessage(
+                'Welcome to Jules Setup! 🐙\nDo you already have your API key from jules.google.com?',
+                'Yes, I have it', 'No, get one now'
+            );
+
+            if (getApiKeyChoice === 'No, get one now') {
+                vscode.env.openExternal(vscode.Uri.parse('https://jules.google.com/settings'));
+                const wait = await vscode.window.showInformationMessage('Please copy your API key from the browser, then click Continue.', 'Continue', 'Cancel');
+                if (wait !== 'Continue') {
+                    return;
+                }
+            } else if (getApiKeyChoice !== 'Yes, I have it') {
+                return;
+            }
+
+            // Step 2: Input Key
+            const key = await vscode.window.showInputBox({
+                prompt: 'Enter your Jules API Key',
+                password: true,
+                placeHolder: 'Get it from jules.google.com/settings',
+                ignoreFocusOut: true
             });
 
-            if (choice === step1) {
-                vscode.env.openExternal(vscode.Uri.parse('https://jules.google.com/settings'));
-                vscode.window.showInformationMessage('Opening Jules Settings. Once you have your key, run this wizard again for Step 2.');
-            } else if (choice === step2) {
-                await vscode.commands.executeCommand('jules.setApiKey');
-            } else if (choice === step3) {
-                // Verify logic: v0.2 Audit Fix (Error boundary)
-                try {
-                    await vscode.window.withProgress(
-                        { location: vscode.ProgressLocation.Notification, title: 'Verifying Jules API Key...' },
-                        async () => {
-                            const client = await clientManager.getClient();
-                            await client.listSources(1); // Call a lightweight endpoint
-                        }
-                    );
-                    vscode.window.showInformationMessage('✅ API Key verified! You are all set.');
-                } catch (err: any) {
-                    vscode.window.showErrorMessage(`❌ Key verification failed: ${err.message}. Please check your key and try again.`);
-                }
+            if (!key) {
+                vscode.window.showWarningMessage('Setup cancelled. API key is required to use Jules.');
+                return;
+            }
+
+            await authManager.setApiKey(key);
+            clientManager.reset(); // Clear old client
+            vscode.commands.executeCommand('setContext', 'jules:hasApiKey', true);
+            codeLensProvider.setApiKeyStatus(true);
+
+            // Step 3: Verify
+            try {
+                await vscode.window.withProgress(
+                    { location: vscode.ProgressLocation.Notification, title: 'Verifying Jules API Key...' },
+                    async () => {
+                        const client = await clientManager.getClient();
+                        await client.listSources(1); // Call a lightweight endpoint
+                    }
+                );
+                vscode.window.showInformationMessage('✅ API Key verified! You are all set. You can now create sessions.');
+                treeProvider.refresh();
+            } catch (err: any) {
+                vscode.window.showErrorMessage(`❌ Key verification failed: ${err.message}. Please check your key and try again.`);
+                await authManager.setApiKey(''); // Clear invalid key
+                vscode.commands.executeCommand('setContext', 'jules:hasApiKey', false);
+                codeLensProvider.setApiKeyStatus(false);
             }
         }),
 
         vscode.commands.registerCommand('jules.openSession', (item) => {
             const session = item?.session || (item as any);
             if (session) {
-                SessionDetailPanel.createOrShow(context.extensionUri, session, clientManager);
+                SessionDetailPanel.createOrShow(session, clientManager);
             }
         }),
 
@@ -95,6 +119,7 @@ export async function activate(context: vscode.ExtensionContext) {
                 await authManager.setApiKey(key);
                 clientManager.reset(); // Clear old client
                 vscode.commands.executeCommand('setContext', 'jules:hasApiKey', true);
+                codeLensProvider.setApiKeyStatus(true);
                 vscode.window.showInformationMessage('Jules API Key updated. Run "Verify & Finish" in the wizard to test it.');
                 treeProvider.refresh();
             }
@@ -102,6 +127,10 @@ export async function activate(context: vscode.ExtensionContext) {
 
         vscode.commands.registerCommand('jules.refreshSessions', () => {
             treeProvider.refresh();
+        }),
+
+        vscode.commands.registerCommand('jules.loadMoreSessions', () => {
+            treeProvider.refresh(true);
         }),
 
         vscode.commands.registerCommand('jules.createSession', () => {
@@ -125,7 +154,7 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('jules.applyPatch', (item) => {
             const session = item?.session || (item as any);
             if (session?.id) {
-                CliRunner.applyPatch(session);
+                CliRunner.applyPatch(session, clientManager);
             }
         }),
 

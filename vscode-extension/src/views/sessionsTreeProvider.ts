@@ -11,6 +11,9 @@ export class SessionsTreeProvider implements vscode.TreeDataProvider<vscode.Tree
     // Proactive tracking: v0.4
     private _previousStates: Map<string, string> = new Map();
     private _bgPollInterval: NodeJS.Timeout | undefined;
+    private _sessions: Session[] = [];
+    private _nextPageToken: string | undefined;
+    private _isFirstLoad: boolean = true;
 
     constructor(
         private readonly clientManager: ClientManager,
@@ -22,7 +25,20 @@ export class SessionsTreeProvider implements vscode.TreeDataProvider<vscode.Tree
      */
     startBackgroundPolling(intervalMs: number = 60000) {
         this.stopBackgroundPolling();
-        this._bgPollInterval = setInterval(() => this.refresh(), intervalMs);
+
+        const poll = async () => {
+            await this.refresh();
+
+            // Adaptive polling based on active sessions
+            const hasActiveSessions = this._sessions.some(s =>
+                !['COMPLETED', 'FAILED'].includes(s.state)
+            );
+
+            const nextInterval = hasActiveSessions ? Math.min(intervalMs, 10000) : intervalMs;
+            this._bgPollInterval = setTimeout(poll, nextInterval);
+        };
+
+        this._bgPollInterval = setTimeout(poll, intervalMs);
     }
 
     /**
@@ -30,7 +46,7 @@ export class SessionsTreeProvider implements vscode.TreeDataProvider<vscode.Tree
      */
     stopBackgroundPolling() {
         if (this._bgPollInterval) {
-            clearInterval(this._bgPollInterval);
+            clearTimeout(this._bgPollInterval);
             this._bgPollInterval = undefined;
         }
     }
@@ -38,11 +54,15 @@ export class SessionsTreeProvider implements vscode.TreeDataProvider<vscode.Tree
     /**
      * Debounced refresh
      */
-    refresh(): void {
+    refresh(loadMore: boolean = false): void {
         if (this._refreshTimer) {
             clearTimeout(this._refreshTimer);
         }
         this._refreshTimer = setTimeout(() => {
+            if (!loadMore) {
+                // reset pagination on standard refresh
+                this._nextPageToken = undefined;
+            }
             this._onDidChangeTreeData.fire();
         }, 300);
     }
@@ -58,20 +78,33 @@ export class SessionsTreeProvider implements vscode.TreeDataProvider<vscode.Tree
 
         try {
             const client = await this.clientManager.getClient();
-            const { sessions = [] } = await client.listSessions(50);
+            const { sessions = [], nextPageToken } = await client.listSessions(50, this._nextPageToken);
             
-            // Proactive checks: v0.4
-            this.handleStateChanges(sessions);
-
-            if (this.onSessionsUpdate) {
-                this.onSessionsUpdate(sessions);
+            if (this._nextPageToken) {
+                this._sessions.push(...sessions);
+            } else {
+                this._sessions = sessions;
             }
 
-            if (sessions.length === 0) {
+            this._nextPageToken = nextPageToken;
+
+            // Proactive checks: v0.4
+            this.handleStateChanges(this._sessions);
+
+            if (this.onSessionsUpdate) {
+                this.onSessionsUpdate(this._sessions);
+            }
+
+            if (this._sessions.length === 0) {
                 return [new InfoTreeItem('No sessions found.')];
             }
 
-            return sessions.map(s => new SessionTreeItem(s));
+            const items: vscode.TreeItem[] = this._sessions.map(s => new SessionTreeItem(s));
+            if (this._nextPageToken) {
+                items.push(new LoadMoreTreeItem());
+            }
+
+            return items;
         } catch (err: any) {
             if (err.message.includes('API Key missing')) {
                 return [];
@@ -84,11 +117,13 @@ export class SessionsTreeProvider implements vscode.TreeDataProvider<vscode.Tree
         const changes: Session[] = [];
         for (const session of sessions) {
             const prevState = this._previousStates.get(session.id);
-            if (prevState && prevState !== session.state) {
+            if (prevState && prevState !== session.state && !this._isFirstLoad) {
                 changes.push(session);
             }
             this._previousStates.set(session.id, session.state);
         }
+
+        this._isFirstLoad = false;
 
         if (changes.length > 3) {
             vscode.window.showInformationMessage(`🐙 Jules: ${changes.length} sessions have state updates.`);
@@ -112,10 +147,10 @@ export class SessionsTreeProvider implements vscode.TreeDataProvider<vscode.Tree
                 }
             });
         } else if (session.state === 'COMPLETED') {
-            const autoApply = vscode.workspace.getConfiguration('jules').get<boolean>('autoApplyAfterApproval', false);
+            const autoApply = vscode.workspace.getConfiguration('jules').get<boolean>('autoApplyAfterCompletion', false);
             if (autoApply) {
                 vscode.window.showInformationMessage(`🚀 Jules: Auto-applying changes for "${title}"...`);
-                CliRunner.applyPatch(session);
+                CliRunner.applyPatch(session, this.clientManager);
             } else {
                 vscode.window.showInformationMessage(
                     `✅ Jules: Session "${title}" completed successfully!`,
@@ -128,6 +163,15 @@ export class SessionsTreeProvider implements vscode.TreeDataProvider<vscode.Tree
                     }
                 });
             }
+        } else if (session.state === 'AWAITING_USER_FEEDBACK') {
+            vscode.window.showInformationMessage(
+                `💬 Jules: Session "${title}" needs your input.`,
+                'Open Detail'
+            ).then(selection => {
+                if (selection === 'Open Detail') {
+                    vscode.commands.executeCommand('jules.openSession', { session });
+                }
+            });
         } else if (session.state === 'FAILED') {
             vscode.window.showErrorMessage(
                 `❌ Jules: Session "${title}" failed.`,
@@ -147,6 +191,18 @@ class InfoTreeItem extends vscode.TreeItem {
     constructor(label: string) {
         super(label, vscode.TreeItemCollapsibleState.None);
         this.contextValue = 'info';
+    }
+}
+
+export class LoadMoreTreeItem extends vscode.TreeItem {
+    constructor() {
+        super('Load More...', vscode.TreeItemCollapsibleState.None);
+        this.contextValue = 'loadMore';
+        this.command = {
+            command: 'jules.loadMoreSessions',
+            title: 'Load More Sessions'
+        };
+        this.iconPath = new vscode.ThemeIcon('sync');
     }
 }
 
