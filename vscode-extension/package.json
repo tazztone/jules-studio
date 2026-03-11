@@ -2,7 +2,7 @@
   "name": "jules-vscode",
   "displayName": "Jules Studio",
   "description": "Manage Google Jules AI coding sessions directly from VS Code — session sidebar, plan approval, inline diffs, CodeLens actions, and proactive notifications.",
-  "version": "0.3.0-beta.1",
+  "version": "0.3.0-beta.2",
   "preview": true,
   "publisher": "tazztone",
   "icon": "media/jules-icon-128.png",
@@ -227,7 +227,8 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext .ts",
-    "package": "vsce package",
+    "package": "npx @vscode/vsce package",
+    "bump": "npm version prerelease --preid=beta",
     "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {

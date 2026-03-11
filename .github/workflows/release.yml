@@ -32,7 +32,7 @@ jobs:
         working-directory: vscode-extension
       
       - name: Package Extension
-        run: npx @vscode/vsce package --out jules-vscode.vsix
+        run: npx @vscode/vsce package
         working-directory: vscode-extension
 
       - name: Publish to Open VSX
@@ -48,6 +48,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            vscode-extension/jules-vscode.vsix
+            vscode-extension/*.vsix
           generate_release_notes: true
           prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
