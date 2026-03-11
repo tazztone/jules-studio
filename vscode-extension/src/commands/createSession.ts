@@ -8,23 +8,36 @@ export async function createSessionCommand(clientManager: ClientManager, refresh
         const detector = new RepoDetector(client);
         
         // 1. Auto-detect source
-        let sourceName = await vscode.window.withProgress(
+        let sourceName: string | undefined;
+        let detectionFailed = false;
+
+        await vscode.window.withProgress(
             { location: vscode.ProgressLocation.Notification, title: 'Detecting Jules Source...' },
             async () => {
-                let name = await detector.getMatchingSource();
-                if (!name) {
-                    const sources = await client.listSources();
-                    const selected = await vscode.window.showQuickPick(
-                        sources.sources.map(s => ({ label: s.githubRepo ? `${s.githubRepo.owner}/${s.githubRepo.repo}` : s.id, name: s.name })),
-                        { placeHolder: 'Select a Jules Source (Repository)' }
-                    );
-                    if (selected) {
-                        name = selected.name;
-                    }
+                sourceName = await detector.getMatchingSource();
+                if (!sourceName) {
+                    detectionFailed = true;
                 }
-                return name;
             }
         );
+
+        if (detectionFailed) {
+            vscode.window.showInformationMessage('Could not automatically match your local git remote to a Jules Source. Please select one manually.');
+            const sources = await client.listSources();
+            const selected = await vscode.window.showQuickPick(
+                sources.sources.map(s => ({
+                    label: s.githubRepo ? `${s.githubRepo.owner}/${s.githubRepo.repo}` : s.id,
+                    description: s.name,
+                    name: s.name
+                })),
+                { placeHolder: 'Select a Jules Source (Repository)' }
+            );
+            if (selected) {
+                sourceName = selected.name;
+            } else {
+                return; // User cancelled
+            }
+        }
 
         if (!sourceName) {
             return;
