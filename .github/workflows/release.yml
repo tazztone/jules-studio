@@ -34,26 +34,19 @@ jobs:
         id: extract_version
         run: |
           VERSION=$(node -p "require('./vscode-extension/package.json').version")
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            # Append run number to make it unique for manual runs
+            VERSION="$VERSION.${{ github.run_number }}"
+            # Update package.json so vsce uses the new version
+            cd vscode-extension && npm version $VERSION --no-git-tag-version && cd ..
+            echo "Using unique version for manual run: $VERSION"
+          fi
           echo "version=v$VERSION" >> $GITHUB_OUTPUT
         
-      - name: Create and Push Tag (Manual Run)
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          TAG=${{ steps.extract_version.outputs.version }}
-          if ! git rev-parse "$TAG" >/dev/null 2>&1; then
-            echo "Tag $TAG does not exist. Creating..."
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git tag "$TAG"
-            git push origin "$TAG"
-          else
-            echo "Tag $TAG already exists."
-          fi
-
       - name: Install Dependencies
         run: npm ci
         working-directory: vscode-extension
-      
+
       - name: Package Extension
         run: npx @vscode/vsce package
         working-directory: vscode-extension
