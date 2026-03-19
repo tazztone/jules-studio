@@ -11,8 +11,21 @@ async function main() {
         // Passed to --extensionTestsPath
         const extensionTestsPath = path.resolve(__dirname, './suite/index');
 
+        // CRITICAL: Unset ELECTRON_RUN_AS_NODE if it's set in the environment.
+        // Otherwise, VS Code binary will behave like Node.js and fail to launch with CLI flags.
+        if (process.env.ELECTRON_RUN_AS_NODE) {
+            delete process.env.ELECTRON_RUN_AS_NODE;
+        }
+
         // Download VS Code, unzip it and run the integration test
-        await runTests({ extensionDevelopmentPath, extensionTestsPath });
+        await runTests({ 
+            extensionDevelopmentPath, 
+            extensionTestsPath,
+            launchArgs: [
+                '--disable-extensions',
+                '--disable-workspace-trust'
+            ]
+        });
     } catch (err) {
         console.error('Failed to run tests');
         process.exit(1);
