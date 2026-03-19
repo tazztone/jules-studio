@@ -13,6 +13,7 @@ import { SettingsPanel } from './views/settingsPanel';
 
 let treeProvider: SessionsTreeProvider;
 let sessionsTreeView: vscode.TreeView<vscode.TreeItem>;
+let repoDetector: RepoDetector | undefined;
 
 export async function activate(context: vscode.ExtensionContext) {
     const authManager = new AuthManager(context);
@@ -181,7 +182,7 @@ export async function activate(context: vscode.ExtensionContext) {
         }),
 
         vscode.commands.registerCommand('jules.createSession', () => {
-            createSessionCommand(clientManager, () => treeProvider.refresh());
+            createSessionCommand(clientManager, () => treeProvider.refresh(), repoDetector);
         }),
 
         vscode.commands.registerCommand('jules.createSessionWithSelection', async (uri?: vscode.Uri) => {
@@ -216,7 +217,7 @@ export async function activate(context: vscode.ExtensionContext) {
                 }
             }
 
-            createSessionCommand(clientManager, () => treeProvider.refresh(), initialContext);
+            createSessionCommand(clientManager, () => treeProvider.refresh(), repoDetector, initialContext);
         }),
 
         vscode.commands.registerCommand('jules.applyPatch', (item) => {
@@ -297,6 +298,7 @@ export async function activate(context: vscode.ExtensionContext) {
                 await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
                 
                 await createSessionCommand(clientManager, () => treeProvider.refresh(), 
+                    repoDetector,
                     `Fix the following terminal error:\n\n\`\`\`\n${errorText}\n\`\`\``);
             }
         }),
@@ -353,36 +355,34 @@ export async function activate(context: vscode.ExtensionContext) {
             await createSessionCommand(
                 clientManager, 
                 () => treeProvider.refresh(), 
+                repoDetector,
                 `${prompts[action]}\n\n${initialContext}`
             );
         })
     );
 
     // Initial refresh and auto-detect repo
-    const autoDetectRepo = async () => {
+    const initializeRepoDetection = async () => {
         try {
             const client = await clientManager.getClient();
-            const detector = new RepoDetector(client);
-            const sourceName = await detector.getMatchingSource();
-            if (sourceName) {
-                treeProvider.setRepoFilter(sourceName);
-                sessionsTreeView.message = `Filtered by: ${sourceName}`;
-            } else {
-                treeProvider.refresh();
+            repoDetector = new RepoDetector(client);
+            
+            const autoDetectEnabled = vscode.workspace.getConfiguration('jules').get<boolean>('autoDetectRepo', true);
+            if (autoDetectEnabled) {
+                const sourceName = await repoDetector.getMatchingSource();
+                if (sourceName) {
+                    treeProvider.setRepoFilter(sourceName);
+                    sessionsTreeView.message = `Filtered by: ${sourceName}`;
+                    return; // setRepoFilter already calls refresh
+                }
             }
         } catch (err) {
             // Client might not be initialized if no API key
-            treeProvider.refresh();
         }
+        treeProvider.refresh();
     };
 
-    // Check if auto-detect repo setting is enabled
-    const autoDetectEnabled = vscode.workspace.getConfiguration('jules').get<boolean>('autoDetectRepo', true);
-    if (autoDetectEnabled) {
-        autoDetectRepo();
-    } else {
-        treeProvider.refresh();
-    }
+    initializeRepoDetection();
 
     // Start background polling if enabled
     const interval = vscode.workspace.getConfiguration('jules').get<number>('autoRefreshInterval', 60);

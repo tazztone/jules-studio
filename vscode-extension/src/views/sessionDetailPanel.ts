@@ -262,10 +262,30 @@ export class SessionDetailPanel {
             background: var(--vscode-input-background);
             color: var(--vscode-input-foreground);
             border: 1px solid var(--vscode-input-border);
-            padding: 8px;
-            margin-bottom: 10px;
-            border-radius: 2px;
+            padding: 10px 12px;
+            margin-bottom: 12px;
+            border-radius: 4px;
             resize: vertical;
+            min-height: 120px;
+            font-family: var(--vscode-font-family);
+            font-size: 13px;
+            line-height: 1.5;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        #messageInput:focus {
+            outline: none;
+            border-color: var(--vscode-focusBorder);
+            box-shadow: 0 0 0 1px var(--vscode-focusBorder);
+        }
+        #sendBtn {
+            font-weight: 500;
+            padding: 8px 20px;
+            transition: background 0.2s, opacity 0.2s;
+        }
+        .message-help {
+            font-size: 0.8em;
+            color: var(--vscode-descriptionForeground);
+            margin-bottom: 8px;
         }
 
         .empty-state {
@@ -302,9 +322,10 @@ export class SessionDetailPanel {
             <!-- Dynamic Actions -->
         </div>
 
-        <div style="margin-top: 30px; border-top: 1px solid var(--vscode-panel-border); padding-top: 20px">
-            <h3>Send Message</h3>
-            <textarea id="messageInput" placeholder="Type a message to Jules..."></textarea>
+        <div style="margin-top: 30px; border-top: 1px solid var(--vscode-panel-border); padding-top: 24px">
+            <h3 style="margin-bottom: 12px;">Send Message to Jules</h3>
+            <div class="message-help">Use <b>Ctrl+Enter</b> to send message quickly.</div>
+            <textarea id="messageInput" rows="5" placeholder="Type a message to Jules..."></textarea>
             <button id="sendBtn">Send Message</button>
         </div>
     </div>
@@ -430,16 +451,39 @@ export class SessionDetailPanel {
 
         function openInBrowser() { vscode.postMessage({ command: 'openBrowser' }); }
 
-        document.getElementById('sendBtn').onclick = () => {
-            const input = document.getElementById('messageInput');
-            const btn = document.getElementById('sendBtn');
-            if (input.value.trim()) {
-                btn.disabled = true;
-                btn.textContent = 'Sending...';
-                vscode.postMessage({ command: 'sendMessage', text: input.value.trim() });
-                input.value = '';
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+
+        // Ctrl+Enter to send
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        const sendMessage = () => {
+            if (messageInput.value.trim() && !sendBtn.disabled) {
+                sendBtn.disabled = true;
+                sendBtn.textContent = 'Sending...';
+                vscode.postMessage({ command: 'sendMessage', text: messageInput.value.trim() });
+                
+                // Visual feedback
+                const originalText = sendBtn.textContent;
+                setTimeout(() => {
+                    if (sendBtn.textContent === 'Sending...') {
+                        sendBtn.textContent = 'Sent ✓';
+                        messageInput.value = '';
+                        setTimeout(() => {
+                            sendBtn.textContent = 'Send Message';
+                            sendBtn.disabled = false;
+                        }, 2000);
+                    }
+                }, 500);
             }
         };
+
+        sendBtn.onclick = sendMessage;
     </script>
 </body>
 </html>`;

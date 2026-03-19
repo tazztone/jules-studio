@@ -10,10 +10,23 @@ import { GitContextManager } from '../workspace/gitContext';
 
 export class CreateSessionPanel {
     public static currentPanel: CreateSessionPanel | undefined;
+    private static _outputChannel: vscode.OutputChannel | undefined;
     private readonly _panel: vscode.WebviewPanel;
     private _disposables: vscode.Disposable[] = [];
 
-    public static createOrShow(clientManager: ClientManager, refreshCallback: () => void, initialContext?: string) {
+    private static getOutputChannel(): vscode.OutputChannel {
+        if (!this._outputChannel) {
+            this._outputChannel = vscode.window.createOutputChannel('Jules Bridge');
+        }
+        return this._outputChannel;
+    }
+
+    public static createOrShow(
+        clientManager: ClientManager, 
+        refreshCallback: () => void, 
+        repoDetector?: RepoDetector,
+        initialContext?: string
+    ) {
         const column = vscode.window.activeTextEditor
             ? vscode.window.activeTextEditor.viewColumn
             : undefined;
@@ -37,13 +50,14 @@ export class CreateSessionPanel {
             }
         );
 
-        CreateSessionPanel.currentPanel = new CreateSessionPanel(panel, clientManager, refreshCallback, initialContext);
+        CreateSessionPanel.currentPanel = new CreateSessionPanel(panel, clientManager, refreshCallback, repoDetector, initialContext);
     }
 
     private constructor(
         panel: vscode.WebviewPanel,
         private readonly clientManager: ClientManager,
         private readonly refreshCallback: () => void,
+        private readonly repoDetector?: RepoDetector,
         initialContext?: string
     ) {
         this._panel = panel;
@@ -72,18 +86,21 @@ export class CreateSessionPanel {
 
         try {
             const client = await this.clientManager.getClient();
-            const detector = new RepoDetector(client);
-
-            // Auto-detect source
-            let defaultSource = await detector.getMatchingSource();
-
-            // List all sources
             const sourcesList = await client.listSources();
             const sources = sourcesList.sources.map(s => ({
                 id: s.id,
                 name: s.name,
                 label: s.githubRepo ? `${s.githubRepo.owner}/${s.githubRepo.repo}` : s.id
             }));
+
+            // Auto-detect source from the fetched list
+            let defaultSource: string | undefined = '';
+            if (this.repoDetector) {
+                defaultSource = await this.repoDetector.getMatchingSource();
+            } else {
+                const detector = new RepoDetector(client);
+                defaultSource = await detector.getMatchingSource();
+            }
 
             // Get current branch
             const gitExt = vscode.extensions.getExtension('vscode.git')?.exports;
@@ -94,7 +111,7 @@ export class CreateSessionPanel {
             // Get available contexts (brains)
             const authManager = this.clientManager.authManager;
             const geminiClient = new GeminiClient(authManager);
-            const outputChannel = vscode.window.createOutputChannel('Jules Bridge');
+            const outputChannel = CreateSessionPanel.getOutputChannel();
             const generator = new PromptGenerator(outputChannel, geminiClient);
             const brainContexts = await generator.getAvailableContexts() || [];
 
@@ -162,7 +179,7 @@ export class CreateSessionPanel {
                 // Generate context
                 const authManager = this.clientManager.authManager;
                 const geminiClient = new GeminiClient(authManager);
-                const outputChannel = vscode.window.createOutputChannel('Jules Bridge');
+                const outputChannel = CreateSessionPanel.getOutputChannel();
                 const generator = new PromptGenerator(outputChannel, geminiClient);
 
                 let selectedBrainContextPath = data.brainContext === 'none' ? undefined : data.brainContext;
@@ -282,54 +299,94 @@ export class CreateSessionPanel {
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-${nonce}';">
             <title>New Jules Session</title>
             <style>
                 body {
-                    padding: 20px;
+                    padding: 24px;
                     font-family: var(--vscode-font-family);
                     color: var(--vscode-foreground);
                     background-color: var(--vscode-editor-background);
-                    max-width: 800px;
+                    max-width: 900px;
                     margin: 0 auto;
+                    line-height: 1.5;
+                }
+                h2 {
+                    font-size: 1.8em;
+                    font-weight: 500;
+                    margin-bottom: 24px;
+                    color: var(--vscode-editor-foreground);
+                    border-bottom: 1px solid var(--vscode-panel-border);
+                    padding-bottom: 12px;
                 }
                 .form-group {
-                    margin-bottom: 20px;
+                    margin-bottom: 24px;
                 }
                 label {
                     display: block;
-                    margin-bottom: 5px;
-                    font-weight: bold;
+                    margin-bottom: 8px;
+                    font-weight: 600;
+                    font-size: 0.9em;
+                    color: var(--vscode-foreground);
                 }
                 input[type="text"], select, textarea {
                     width: 100%;
-                    padding: 8px;
+                    padding: 10px 12px;
                     background: var(--vscode-input-background);
                     color: var(--vscode-input-foreground);
                     border: 1px solid var(--vscode-input-border);
-                    border-radius: 2px;
+                    border-radius: 4px;
                     box-sizing: border-box;
                     font-family: var(--vscode-font-family);
+                    font-size: 13px;
+                    transition: border-color 0.2s, box-shadow 0.2s;
+                }
+                input:focus, select:focus, textarea:focus {
+                    outline: none;
+                    border-color: var(--vscode-focusBorder);
+                    box-shadow: 0 0 0 1px var(--vscode-focusBorder);
                 }
                 textarea {
-                    min-height: 150px;
+                    min-height: 250px;
                     resize: vertical;
+                    line-height: 1.6;
+                }
+                .prompt-container {
+                    position: relative;
+                }
+                #charCount {
+                    position: absolute;
+                    bottom: 8px;
+                    right: 12px;
+                    font-size: 0.75em;
+                    color: var(--vscode-descriptionForeground);
+                    pointer-events: none;
                 }
                 .actions {
-                    margin-top: 30px;
+                    margin-top: 40px;
                     display: flex;
-                    gap: 10px;
+                    gap: 12px;
                     justify-content: flex-end;
+                    border-top: 1px solid var(--vscode-panel-border);
+                    padding-top: 24px;
                 }
                 button {
                     background: var(--vscode-button-background);
                     color: var(--vscode-button-foreground);
                     border: none;
-                    padding: 8px 16px;
+                    padding: 8px 20px;
                     cursor: pointer;
-                    border-radius: 2px;
+                    border-radius: 4px;
+                    font-weight: 500;
+                    font-size: 13px;
+                    transition: background 0.2s;
                 }
                 button:hover {
                     background: var(--vscode-button-hoverBackground);
+                }
+                button:disabled {
+                    opacity: 0.5;
+                    cursor: not-allowed;
                 }
                 button.secondary {
                     background: var(--vscode-button-secondaryBackground);
@@ -339,9 +396,18 @@ export class CreateSessionPanel {
                     background: var(--vscode-button-secondaryHoverBackground);
                 }
                 .help-text {
-                    font-size: 0.85em;
+                    font-size: 0.8em;
                     color: var(--vscode-descriptionForeground);
-                    margin-top: 4px;
+                    margin-top: 6px;
+                }
+                .required-dot {
+                    color: var(--vscode-errorForeground);
+                    margin-left: 4px;
+                }
+                .keyboard-shortcut {
+                    font-size: 0.85em;
+                    opacity: 0.7;
+                    margin-left: 8px;
                 }
             </style>
         </head>
@@ -357,21 +423,25 @@ export class CreateSessionPanel {
                 </div>
 
                 <div class="form-group">
-                    <label for="prompt">Prompt / Mission Brief <span style="color:var(--vscode-errorForeground)">*</span></label>
-                    <textarea id="prompt" placeholder="What should Jules do? e.g., Fix the bug in auth middleware" required>${this._escapeHtml(defaultPrompt)}</textarea>
+                    <label for="prompt">Prompt / Mission Brief <span class="required-dot">*</span></label>
+                    <div class="prompt-container">
+                        <textarea id="prompt" placeholder="What should Jules do? e.g., Fix the bug in auth middleware" required>${this._escapeHtml(defaultPrompt)}</textarea>
+                        <div id="charCount">0 characters</div>
+                    </div>
+                    <div class="help-text">Detailed instructions for the AI agent. Use <b>Ctrl+Enter</b> to create session quickly.</div>
                 </div>
 
                 <div class="form-group">
-                    <label for="source">Repository Source <span style="color:var(--vscode-errorForeground)">*</span></label>
+                    <label for="source">Repository Source <span class="required-dot">*</span></label>
                     <select id="source" required>
                         ${sourceOptions}
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="branch">Branch <span style="color:var(--vscode-errorForeground)">*</span></label>
+                    <label for="branch">Starting Branch <span class="required-dot">*</span></label>
                     <input type="text" id="branch" value="${this._escapeHtml(currentBranch)}" required>
-                    <div class="help-text">The branch to start from.</div>
+                    <div class="help-text">The branch Jules will branch off from.</div>
                 </div>
 
                 <div class="form-group">
@@ -398,19 +468,38 @@ export class CreateSessionPanel {
 
             <script nonce="${nonce}">
                 const vscode = acquireVsCodeApi();
+                const promptEl = document.getElementById('prompt');
+                const charCountEl = document.getElementById('charCount');
+                const formEl = document.getElementById('sessionForm');
+                const submitBtn = document.getElementById('submitBtn');
 
-                document.getElementById('sessionForm').addEventListener('submit', (e) => {
+                // Update character count
+                const updateCharCount = () => {
+                    const count = promptEl.value.length;
+                    charCountEl.textContent = count.toLocaleString() + ' characters';
+                };
+                promptEl.addEventListener('input', updateCharCount);
+                updateCharCount();
+
+                // Ctrl+Enter to submit
+                promptEl.addEventListener('keydown', (e) => {
+                    if (e.ctrlKey && e.key === 'Enter') {
+                        e.preventDefault();
+                        formEl.requestSubmit();
+                    }
+                });
+
+                formEl.addEventListener('submit', (e) => {
                     e.preventDefault();
 
-                    const btn = document.getElementById('submitBtn');
-                    btn.disabled = true;
-                    btn.textContent = 'Creating...';
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Creating Session...';
 
                     vscode.postMessage({
                         command: 'submit',
                         data: {
                             title: document.getElementById('title').value,
-                            prompt: document.getElementById('prompt').value,
+                            prompt: promptEl.value,
                             source: document.getElementById('source').value,
                             branch: document.getElementById('branch').value,
                             brainContext: document.getElementById('brainContext').value,
