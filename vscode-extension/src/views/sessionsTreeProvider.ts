@@ -114,7 +114,7 @@ export class SessionsTreeProvider implements vscode.TreeDataProvider<vscode.Tree
             if (isBackground && this._sessions.length > 0) {
                 // On background poll, only fetch the first page to get state updates
                 // and don't reset _nextPageToken so load more still works later
-                const { sessions = [] } = await client.listSessions(pageSize, undefined, this._repoFilter);
+                const { sessions = [] } = await client.listSessions(pageSize, undefined);
 
                 // Merge updates into existing sessions to preserve pagination
                 const sessionMap = new Map(this._sessions.map(s => [s.id, s]));
@@ -131,7 +131,7 @@ export class SessionsTreeProvider implements vscode.TreeDataProvider<vscode.Tree
                 ];
 
             } else {
-                const { sessions = [], nextPageToken } = await client.listSessions(pageSize, this._nextPageToken, this._repoFilter);
+                const { sessions = [], nextPageToken } = await client.listSessions(pageSize, this._nextPageToken);
 
                 if (isLoadMore && this._nextPageToken) {
                     // Append unique sessions
