@@ -286,12 +286,12 @@ export class CreateSessionPanel {
         const nonce = this._generateNonce();
 
         const sourceOptions = sources.map(s =>
-            `<option value="${s.name}" ${s.name === defaultSource ? 'selected' : ''}>${s.label} (${s.name})</option>`
+            `<option value="${s.name}" ${s.name === defaultSource ? 'selected' : ''}>${s.label}</option>`
         ).join('');
 
         const brainOptions = [
             `<option value="none">None (Do not include previous agent brain context)</option>`,
-            ...brainContexts.map(c => `<option value="${c.path}">${c.name} - ${c.title}</option>`)
+            ...brainContexts.map(c => `<option value="${c.path}">${c.title}</option>`)
         ].join('');
 
         return `<!DOCTYPE html>
@@ -456,7 +456,7 @@ export class CreateSessionPanel {
                     <label for="automationMode">Automation Mode</label>
                     <select id="automationMode">
                         <option value="manual">Manual Approval - Approve every plan manually</option>
-                        <option value="auto_pr">Auto Create PR - Create PR automatically once finished</option>
+                        <option value="auto_pr" selected>Auto Create PR - Create PR automatically once finished</option>
                     </select>
                 </div>
 
