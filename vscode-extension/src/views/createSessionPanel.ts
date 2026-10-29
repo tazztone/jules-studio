@@ -414,6 +414,10 @@ export class CreateSessionPanel {
         <body>
             <h2>Create New Jules Session</h2>
 
+            <div style="background: rgba(234, 179, 8, 0.15); border: 1px solid rgba(234, 179, 8, 0.4); border-radius: 6px; padding: 12px 16px; margin-bottom: 20px; font-size: 0.9em; line-height: 1.4;">
+                <strong style="color: #fbbf24;">⚠️ Deprecation Notice:</strong> Google Jules winds down December 31, 2026 (Read-only November 11, 2026). Migrate active workflows to <strong>Google Antigravity</strong>.
+            </div>
+
             <form id="sessionForm">
                 <input type="hidden" id="initialContext" value="${this._escapeHtml(initialContext)}">
 

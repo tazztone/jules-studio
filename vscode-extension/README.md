@@ -2,10 +2,58 @@
 
 [![CI](https://github.com/tazztone/jules-studio/actions/workflows/ci.yml/badge.svg)](https://github.com/tazztone/jules-studio/actions/workflows/ci.yml)
 
-> [!IMPORTANT]
-> **Beta Preview**: This extension is currently in beta. We are actively refining the experience and appreciate your feedback.
+> [!WARNING]
+> ### ⚠️ DEPRECATION NOTICE: Google Jules Sunset
+> **Google Jules will wind down on December 31, 2026.**
+> - **November 11, 2026**: Jules becomes read-only. No new sessions or tasks can be started.
+> - **December 31, 2026**: Jules services are discontinued.
+>
+> In accordance with Google unifying agentic coding efforts into **Google Antigravity**, **Jules Studio for VS Code is deprecated**. No new feature releases will be issued.
+>
+> Please follow the [Data Export & Migration Guide](#data-export--migration-guide) below to archive your session logs, plans, diffs, and open suggestions before November 11, 2026.
 
 Bring the full power of Jules directly into your IDE. Manage sessions, review and approve plans, apply patches, and get proactive notifications — all without leaving your editor.
+
+## Data Export & Migration Guide
+
+Google Jules winds down on **December 31, 2026** and transitions to **read-only on November 11, 2026**.
+
+> [!IMPORTANT]
+> **Open Suggested Tasks**: There is no documented Jules API endpoint, SDK method, or CLI command that exports "open suggestions" directly. The official API only exposes `sources`, `sessions`, and `session activities`. **Open suggestion cards must be manually copied or started as sessions before November 11, 2026 to be exportable.**
+
+### Bulk REST API Export
+
+Set your Jules API key obtained from [jules.google.com/settings](https://jules.google.com/settings):
+
+```bash
+export JULES_API_KEY="your-api-key"
+
+# 1. Export Connected Repositories
+curl -s -H "X-Goog-Api-Key: $JULES_API_KEY" \
+  "https://jules.googleapis.com/v1alpha/sources" > sources.json
+
+# 2. Export All Sessions & Activities
+curl -s -H "X-Goog-Api-Key: $JULES_API_KEY" \
+  "https://jules.googleapis.com/v1alpha/sessions?pageSize=100" > sessions.json
+
+jq -r '.sessions[].name' sessions.json | while read -r sess; do
+  SESSION_ID=$(basename "$sess")
+  curl -s -H "X-Goog-Api-Key: $JULES_API_KEY" \
+    "https://jules.googleapis.com/v1alpha/$sess" > "session_${SESSION_ID}.json"
+
+  curl -s -H "X-Goog-Api-Key: $JULES_API_KEY" \
+    "https://jules.googleapis.com/v1alpha/$sess/activities?pageSize=100" > "activities_${SESSION_ID}.json"
+done
+```
+
+### Migration Path: Google Antigravity
+
+For ongoing agentic development, transition to **Google Antigravity**:
+- Long-running agents handling complex multi-step coding backlogs.
+- Multi-agent parallel workflows.
+- Scheduled and recurring tasks.
+
+---
 
 ## Prerequisites
 

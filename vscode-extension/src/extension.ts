@@ -28,6 +28,24 @@ export async function activate(context: vscode.ExtensionContext) {
         treeDataProvider: treeProvider,
         showCollapseAll: false
     });
+    sessionsTreeView.message = '⚠️ Jules winds down Dec 31, 2026 (Read-only Nov 11)';
+
+    // Sunset deprecation notification (shown once)
+    const sunsetNoticeKey = 'jules_sunset_notice_shown';
+    if (!context.globalState.get(sunsetNoticeKey)) {
+        vscode.window.showWarningMessage(
+            '⚠️ Google Jules is winding down on Dec 31, 2026 (Read-only Nov 11, 2026). Jules Studio is deprecated. Transition to Google Antigravity.',
+            'Export Guide',
+            'Learn More'
+        ).then(choice => {
+            if (choice === 'Export Guide') {
+                vscode.env.openExternal(vscode.Uri.parse('https://github.com/tazztone/jules-studio#data-export--migration-guide'));
+            } else if (choice === 'Learn More') {
+                vscode.env.openExternal(vscode.Uri.parse('https://developers.google.com/jules'));
+            }
+        });
+        context.globalState.update(sunsetNoticeKey, true);
+    }
 
     // Register CodeLens Provider
     const codeLensProvider = new JulesCodeLensProvider();
@@ -123,6 +141,10 @@ export async function activate(context: vscode.ExtensionContext) {
 
         vscode.commands.registerCommand('jules.openSettings', () => {
             SettingsPanel.createOrShow(authManager, () => treeProvider.refresh());
+        }),
+
+        vscode.commands.registerCommand('jules.exportGuide', () => {
+            vscode.env.openExternal(vscode.Uri.parse('https://github.com/tazztone/jules-studio#data-export--migration-guide'));
         }),
 
         vscode.commands.registerCommand('jules.openSession', (item) => {

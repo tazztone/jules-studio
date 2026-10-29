@@ -1,7 +1,7 @@
 {
   "name": "jules-vscode",
   "displayName": "Jules Studio",
-  "description": "Manage Google Jules AI coding sessions directly from VS Code — session sidebar, plan approval, inline diffs, CodeLens actions, and proactive notifications.",
+  "description": "[DEPRECATED] Manage Google Jules AI coding sessions directly from VS Code. Google Jules winds down Dec 31, 2026 (Read-only Nov 11, 2026). Transition to Google Antigravity.",
   "version": "0.3.0-beta.3",
   "preview": true,
   "publisher": "tazztone",
@@ -14,7 +14,7 @@
   "bugs": {
     "url": "https://github.com/tazztone/jules-studio/issues"
   },
-  "license": "MIT",
+  "license": "Apache-2.0",
   "keywords": [
     "jules",
     "AI",
@@ -98,6 +98,11 @@
         "title": "Jules: Refresh Sessions",
         "category": "Jules",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "jules.exportGuide",
+        "title": "Jules: Sunset Data Export Guide",
+        "category": "Jules"
       },
       {
         "command": "jules.loadMoreSessions",
