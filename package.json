@@ -2,6 +2,7 @@
   "name": "jules-studio",
   "private": true,
   "version": "0.3.0-beta.1",
+  "description": "[DEPRECATED] Jules Studio web dashboard. Google Jules winds down Dec 31, 2026. Transition to Google Antigravity.",
   "type": "module",
   "scripts": {
     "dev": "vite",

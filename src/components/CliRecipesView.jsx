@@ -1,8 +1,13 @@
 import React from 'react';
-import { Copy, Loader2 } from 'lucide-react';
+import { Copy, Loader2, AlertTriangle, Download } from 'lucide-react';
 
 const CliRecipesView = () => {
     const recipes = [
+        {
+            title: "Data Backup & Sunset Archival",
+            desc: "Export all Jules sessions and full activity JSON logs via REST API before the cutoff.",
+            code: `export JULES_API_KEY="your-api-key"\n\n# 1. Fetch sessions list\ncurl -s -H "X-Goog-Api-Key: $JULES_API_KEY" \\\n  "https://jules.googleapis.com/v1alpha/sessions?pageSize=100" > sessions.json\n\n# 2. Iterate and save detail + activities\njq -r '.sessions[].name' sessions.json | while read -r sess; do\n  ID=$(basename "$sess")\n  curl -s -H "X-Goog-Api-Key: $JULES_API_KEY" \\\n    "https://jules.googleapis.com/v1alpha/$sess" > "session_\${ID}.json"\n  curl -s -H "X-Goog-Api-Key: $JULES_API_KEY" \\\n    "https://jules.googleapis.com/v1alpha/$sess/activities?pageSize=100" > "activities_\${ID}.json"\ndone`
+        },
         {
             title: "Batch Issue Delegation",
             desc: "Read a local TODO.md and spin up a Jules session for each line automatically.",
@@ -22,9 +27,45 @@ const CliRecipesView = () => {
 
     return (
         <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-5xl mx-auto pb-12">
+            {/* Deprecation Warning Banner */}
+            <div className="p-5 rounded-2xl border border-amber-500/40 bg-amber-500/10 text-amber-100">
+                <div className="flex items-start gap-4">
+                    <AlertTriangle className="text-amber-400 mt-1 shrink-0" size={24} />
+                    <div className="space-y-1">
+                        <h3 className="text-lg font-bold text-white">Jules Deprecation & Sunset Timeline</h3>
+                        <p className="text-sm text-amber-200/90 leading-relaxed">
+                            Google Jules is winding down on <strong>December 31, 2026</strong>. From <strong>November 11, 2026</strong>, Jules is read-only.
+                            Agentic coding development is moving to <strong>Google Antigravity</strong>. Export all data and suggested tasks before the shutdown.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             <div>
                 <h2 className="text-3xl font-bold text-white mb-3">CLI & Integrations</h2>
-                <p className="text-gray-400 text-lg">Bridge your cloud sessions with your local development environment using the <code className="bg-gray-800 px-2 py-0.5 rounded text-blue-300 font-mono">jules</code> CLI.</p>
+                <p className="text-gray-400 text-lg">Tools, automation recipes, and archival scripts to manage and export Jules data prior to sunset.</p>
+            </div>
+
+            {/* Archival Guidance Card */}
+            <div className="bg-gray-900/60 border border-gray-800 rounded-2xl p-6">
+                <div className="flex items-center gap-3 mb-4">
+                    <Download className="text-blue-400" size={22} />
+                    <h3 className="text-xl font-semibold text-white">Sunset Data Extraction Guide</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-300">
+                    <div className="p-4 bg-gray-950/60 rounded-xl border border-gray-800/80">
+                        <span className="font-semibold text-amber-300 block mb-1">Open Suggestions</span>
+                        <p className="text-gray-400 text-xs leading-relaxed">
+                            No API endpoint exists for open suggested tasks. Manually copy prompt/rationale or start suggestions as sessions before November 11 to generate exportable plans.
+                        </p>
+                    </div>
+                    <div className="p-4 bg-gray-950/60 rounded-xl border border-gray-800/80">
+                        <span className="font-semibold text-blue-300 block mb-1">REST API Bulk Export</span>
+                        <p className="text-gray-400 text-xs leading-relaxed">
+                            Use the official REST API (<code className="text-gray-300">/v1alpha/sessions</code> and <code className="text-gray-300">/v1alpha/sessions/&#123;id&#125;/activities</code>) to backup full session transcripts and patch diffs.
+                        </p>
+                    </div>
+                </div>
             </div>
 
             {/* Setup Section */}

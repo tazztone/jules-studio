@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate, useParams, Link } from 'react-router-dom';
+import { AlertTriangle } from 'lucide-react';
 import Sidebar from './components/Sidebar';
 import SessionsList from './components/SessionsList';
 import SessionDetailView from './components/SessionDetailView';
@@ -34,6 +35,28 @@ export default function App() {
 
             <main className="flex-1 overflow-y-auto p-8 lg:p-12">
                 <div className="max-w-6xl mx-auto h-full">
+                    {/* Sunset & Deprecation Warning Banner */}
+                    <div className="mb-6 p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-200">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                            <div className="flex items-start gap-3">
+                                <AlertTriangle className="text-amber-400 mt-0.5 shrink-0" size={20} />
+                                <div>
+                                    <p className="font-semibold text-white">Google Jules Deprecation Notice</p>
+                                    <p className="text-sm text-amber-200/90 mt-0.5">
+                                        Google Jules winds down on <strong>December 31, 2026</strong>. Read-only mode begins <strong>November 11, 2026</strong>.
+                                        Migrate workflows to <strong>Google Antigravity</strong> and backup data before shutdown.
+                                    </p>
+                                </div>
+                            </div>
+                            <Link 
+                                to="/cli" 
+                                className="text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 px-3 py-1.5 rounded-lg border border-amber-500/30 whitespace-nowrap transition-colors font-medium self-end sm:self-center"
+                            >
+                                Export Guide
+                            </Link>
+                        </div>
+                    </div>
+
                     <Routes>
                         <Route path="/" element={<Navigate to="/sessions" replace />} />
                         

@@ -26,6 +26,7 @@ describe('App Integration', () => {
 
         expect(screen.getByText('Jules Studio')).toBeInTheDocument();
         expect(screen.getByText(/Active Sessions/i)).toBeInTheDocument();
+        expect(screen.getByText('Google Jules Deprecation Notice')).toBeInTheDocument();
         
         fireEvent.click(screen.getByRole('link', { name: /CLI & Integrations/i }));
         expect(screen.getAllByText(/CLI & Integrations/i).length).toBeGreaterThan(0);
